@@ -10,10 +10,10 @@ for (nm, x, y, z) in table:
  *
  */
 
-pub const kFirstWavelength: f64 = 360f64;
-pub const  kLastWavelength: f64 = 780f64;
+pub const FIRST_WAVELENGTH: f64 = 360.0;
+pub const  LAST_WAVELENGTH: f64 = 780.0;
 
-pub const wavelengthToRGB: [(i16,i16,i16); 421] = [
+pub const WAVELENGTH_TO_RGB: [(i16,i16,i16); 421] = [
     (     0,      0,      5,),  // 360 nm
     (     1,      0,      5,),  // 361 nm
     (     1,      0,      6,),  // 362 nm

@@ -21,7 +21,7 @@ impl PRNG {
             rng2: s,
             rng3: s,
         };
-        for i in 0 .. 20 {
+        for _ in 0 .. 20 {
             n.uniform_u32();
         }
         return n;
