@@ -1,3 +1,7 @@
+mod sampler;
+mod spectrum;
+mod prng;
+
 #[cfg(test)]
 mod tests {
     #[test]
