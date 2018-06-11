@@ -2,6 +2,7 @@
 mod sampler;
 mod spectrum;
 mod prng;
+mod image;
 
 #[cfg(test)]
 mod tests {
