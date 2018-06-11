@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+extern crate aabb_quadtree;
+
 mod sampler;
 mod spectrum;
 mod prng;
