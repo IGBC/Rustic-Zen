@@ -2,6 +2,7 @@ use prng::PRNG;
 use spectrum::blackbody_wavelength;
 use std::f64;
 
+#[derive(Clone, Copy)]
 pub enum Sample {
         Constant(f64),
         Blackbody(f64),

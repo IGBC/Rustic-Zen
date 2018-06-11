@@ -1,5 +1,6 @@
 use sampler::Sample;
 
+#[derive(Clone, Copy)]
 struct Light {
     power: Sample,
     x: Sample,
@@ -10,6 +11,7 @@ struct Light {
     wavelength: Sample,
 }
 
+#[derive(Clone, Copy)]
 enum Object<'a> {
     Line{
         material: &'a Material,
@@ -29,12 +31,14 @@ enum Object<'a> {
     },
 }
 
+#[derive(Clone, Copy)]
 struct Material {
     d: f64,
     t: f64,
     r: f64,
 }
 
+#[derive(Clone, Copy)]
 struct Viewport {
     left: usize,
     top: usize,
@@ -42,6 +46,7 @@ struct Viewport {
     height: usize,
 }
 
+#[derive(Clone)]
 struct Scene<'a> {
     resolution_x: usize,
     resolution_y: usize,
