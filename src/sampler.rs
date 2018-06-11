@@ -2,7 +2,7 @@ use prng::PRNG;
 use spectrum::blackbody_wavelength;
 use std::f64;
 
-pub enum SamplerType {
+pub enum Sample {
         Constant(f64),
         Blackbody(f64),
         Range(f64,f64),
@@ -13,33 +13,31 @@ pub enum SamplerType {
 ///  - linear range between two values
 ///  - A Blackbody Curve of temperature K
 pub struct Sampler {
-    random: PRNG,    
-    typ: SamplerType
+    random: PRNG
 }
 
 impl Sampler {
-    pub fn new(seed: u32, typ: SamplerType) -> Self {
+    pub fn new(seed: u32) -> Self {
         Sampler {
             random: PRNG::seed(seed),
-            typ,
         }
     }
 
     /// Returns next value of this sampler
-    pub fn val(&mut self) -> f64 {
-        match self.typ {
-            SamplerType::Constant(i) => i,
-            SamplerType::Blackbody(k) => blackbody_wavelength(k, self.random.uniform_f64()),
-            SamplerType::Range(l, u) => self.random.uniform_range(l, u), 
+    pub fn val(&mut self, sample: Sample) -> f64 {
+        match sample {
+            Sample::Constant(i) => i,
+            Sample::Blackbody(k) => blackbody_wavelength(k, self.random.uniform_f64()),
+            Sample::Range(l, u) => self.random.uniform_range(l, u), 
         }
     }
 
-    // Returns upper and lower bounds of this SamplerType
-    pub fn bounds(t: SamplerType) -> (f64, f64) {
-        match t {
-            SamplerType::Constant(i) => (i, i),
+    // Returns upper and lower bounds of this Sample
+    pub fn bounds(sample: Sample) -> (f64, f64) {
+        match sample {
+            Sample::Constant(i) => (i, i),
             //Blackbody(k) => (k, k), //TODO Actually work out what these are.
-            SamplerType::Range(l,u) => (l, u),
+            Sample::Range(l,u) => (l, u),
             _ => (f64::MIN, f64::MAX),
         }
     }

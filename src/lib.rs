@@ -3,6 +3,7 @@ mod sampler;
 mod spectrum;
 mod prng;
 mod image;
+mod scene;
 
 #[cfg(test)]
 mod tests {
