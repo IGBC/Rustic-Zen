@@ -1,7 +1,8 @@
 use sampler::Sample;
+use object::Object;
 
 #[derive(Clone, Copy)]
-struct Light {
+pub struct Light {
     power: Sample,
     x: Sample,
     y: Sample,
@@ -11,35 +12,15 @@ struct Light {
     wavelength: Sample,
 }
 
-#[derive(Clone, Copy)]
-enum Object<'a> {
-    Line{
-        material: &'a Material,
-        x0: Sample,
-        y0: Sample,
-        dx: Sample,
-        dy: Sample,
-    },
-    Curve{
-        material: &'a Material,
-        x0: Sample,
-        y0: Sample,
-        a0: Sample,
-        dx: Sample,
-        dy: Sample,
-        da: Sample,
-    },
-}
-
-#[derive(Clone, Copy)]
-struct Material {
+#[derive(Clone, Copy, Debug)]
+pub struct Material {
     d: f64,
     t: f64,
     r: f64,
 }
 
 #[derive(Clone, Copy)]
-struct Viewport {
+pub struct Viewport {
     left: usize,
     top: usize,
     width: usize,
@@ -47,7 +28,7 @@ struct Viewport {
 }
 
 #[derive(Clone)]
-struct Scene<'a> {
+pub struct Scene<'a> {
     resolution_x: usize,
     resolution_y: usize,
     viewport: Viewport,
@@ -64,3 +45,4 @@ struct Scene<'a> {
     objects: Vec<Object<'a>>,
     materials: Vec<Material>,
 }
+
