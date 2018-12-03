@@ -6,14 +6,6 @@ use object::Object;
 use ray::Vec2;
 use ray::Ray;
 
-struct IntersectionData<'a>{
-    ray: Ray,
-    point: Vec2,
-    normal: Vec2,
-    distance: f64,
-    hit: Option<&'a Object<'a>>,
-}
-
 pub struct Renderer<'a> {
     scene: Scene<'a>,
     image: Image,
