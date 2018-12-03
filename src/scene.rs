@@ -3,13 +3,13 @@ use object::Object;
 
 #[derive(Clone, Copy)]
 pub struct Light {
-    power: Sample,
-    x: Sample,
-    y: Sample,
-    polar_angle: Sample,
-    polar_distance: Sample,
-    ray_angle: Sample,
-    wavelength: Sample,
+    pub power: Sample,
+    pub x: Sample,
+    pub y: Sample,
+    pub polar_angle: Sample,
+    pub polar_distance: Sample,
+    pub ray_angle: Sample,
+    pub wavelength: Sample,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -29,20 +29,19 @@ pub struct Viewport {
 
 #[derive(Clone)]
 pub struct Scene<'a> {
-    resolution_x: usize,
-    resolution_y: usize,
-    viewport: Viewport,
+    pub resolution_x: usize,
+    pub resolution_y: usize,
+    pub viewport: Viewport,
 
-    seed: u32,
+    pub seed: u32,
 
-    rays: usize,
-    timelimit: usize,
+    pub rays: usize,
+    pub timelimit: usize,
 
-    exposure: f64,
-    gamma: f64,
+    pub exposure: f64,
+    pub gamma: f64,
 
-    lights: Vec<Light>,
-    objects: Vec<Object<'a>>,
-    materials: Vec<Material>,
+    pub lights: Vec<Light>,
+    pub objects: Vec<Object<'a>>,
+    pub materials: Vec<Material>,
 }
-

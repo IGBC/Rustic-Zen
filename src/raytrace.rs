@@ -58,7 +58,7 @@ impl<'a> ObjectMap<'a> {
         let result = self.recurse(ray);
         match result {
             None => (),
-            Some(p) => {ray.end = &p},
+            Some(p) => {ray.end = &p}, // <- BUG!!!
         };
     }
 
@@ -71,8 +71,10 @@ impl<'a> ObjectMap<'a> {
             0 => None,
             // one object in box, check if we actually hit it.
             1 => {
-                // special case go get the bloody coords
+                // Step 3
+                // go get the bloody coords
                 Some(Point{
+                    //TODO: do precise collision
                     x: 0.0,
                     y: 0.0,
                 })
@@ -97,7 +99,11 @@ impl<'a> ObjectMap<'a> {
                 };
                 
                 let mut result = self.recurse(&box_a);
-                if result.is_none() { result = self.recurse(&box_b)};
+                // if first ray segment has no hit, try second segment.
+                if result.is_none() { 
+                    result = self.recurse(&box_b)
+                };
+                // should be Some(1) or None() if not it will propogate.
                 result
             }
         }

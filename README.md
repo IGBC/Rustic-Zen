@@ -1,6 +1,6 @@
 Rustic Zen
 ==========
-Rust Implementation of Micha Scott's (Zen Photon)[1]
+Rust Implementation of Micha Scott's Zen Photon[1]
 
 
 

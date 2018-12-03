@@ -15,7 +15,7 @@ pub enum Sample {
 
 impl Sample {
     /// Returns next value of this sampler
-    pub fn val(&mut self, sampler: &mut PRNG) -> f64 {
+    pub fn val(&self, sampler: &mut PRNG) -> f64 {
         match self {
             Sample::Constant(i) => i.clone(),
             Sample::Blackbody(k) => blackbody_wavelength(k.clone(), sampler.uniform_f64()),

@@ -8,7 +8,9 @@ mod prng;
 mod image;
 mod scene;
 mod object;
-mod raytrace;
+//mod raytrace;
+mod niave_rt;
+mod ray;
 
 #[cfg(test)]
 mod tests {
