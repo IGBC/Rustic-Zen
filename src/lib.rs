@@ -2,6 +2,10 @@
 #![warn(missing_docs)]
 extern crate aabb_quadtree;
 
+#[cfg(test)]
+extern crate rand;
+
+
 mod sampler;
 mod spectrum;
 mod prng;

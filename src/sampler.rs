@@ -33,3 +33,96 @@ impl Sample {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Sample;
+    use prng::PRNG;
+
+    use rand::prelude::*;
+
+    #[test]
+    fn const_bounds() {
+        // test bounds with 1000 random numbers
+        for _ in 0..1000 {
+            let mut stdrng = rand::thread_rng();
+            let f: f64 = stdrng.gen();
+            let s = Sample::Constant(f);
+            let (a, b) = s.bounds();
+            assert_eq!(a, b);
+            assert_eq!(a, f);
+            assert_eq!(b, f);
+        }
+    }
+
+    #[test]
+    fn range_bounds() {
+        for _ in 0..1000 {
+            let mut stdrng = rand::thread_rng();
+            let a: f64 = stdrng.gen();
+            let b: f64 = stdrng.gen();
+            let s = Sample::Range(a, b);
+
+            let (c, d) = s.bounds();
+            assert_eq!(a, c);
+            assert_eq!(b, d);
+        }
+    }
+
+    #[test]
+    fn val_const() {
+        let mut rng = PRNG::seed(0);
+        
+        let mut stdrng = rand::thread_rng();
+        let f: f64 = stdrng.gen();
+        let s = Sample::Constant(f);
+
+        for _ in 0..1000 {
+            let y = s.val(&mut rng);
+            assert_eq!(y, f);
+        }
+    }
+
+        #[test]
+    fn val_range() {
+        let mut rng = PRNG::seed(0);
+        
+        let mut stdrng = rand::thread_rng();
+        let mut f1: f64 = stdrng.gen();
+        let mut f2: f64 = stdrng.gen();
+        if f1 < f2 {
+            let tmp = f1;
+            f1 = f2;
+            f2 = tmp;
+        }
+        let s = Sample::Range(f1, f2);
+
+        // This does actually run 100,000 times despite finishing so quickly
+        for _ in 0..100000 {
+            let y = s.val(&mut rng);
+            assert!(y <= f1);
+            assert!(y >= f2);
+        }
+    }
+
+    #[test]
+    fn blackbody_works() {
+        let mut rng = PRNG::seed(0);
+        // Get a sampled value from the range of valid wavelenghts
+        let w = Sample::Range(780.0, 360.0);
+
+        // create sample with random wavelenght
+        let s = Sample::Blackbody(w.val(&mut rng));
+
+        // Check s can be sampled without panicing
+        s.val(&mut rng);
+    }
+
+    #[test]
+    fn blackbody_white_light() {
+        let mut rng = PRNG::seed(0);
+        let s = Sample::Blackbody(0.0);
+        // Check s can be sampled without panicing
+        s.val(&mut rng);
+    }
+}

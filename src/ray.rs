@@ -4,6 +4,7 @@ use spectrum::wavelength_to_colour;
 use std::f64::consts::PI;
 use object::Object;
 
+#[derive(Clone)]
 pub struct Vec2 {
     x: f64, 
     y: f64,
@@ -33,10 +34,13 @@ pub struct Ray {
     origin: Vec2,
     direction: Vec2,
     colour: (u16, u16, u16),
-    slope: f64,
 }
 
 impl Ray {
+
+    /**
+     * Creates new ray from light source, sampling the light apropriately.
+     */
     pub fn new(light: &Light, rng: &mut PRNG)->Self {
         let cart_x = light.x.val(rng);
         let cart_y = light.y.val(rng);
@@ -52,7 +56,6 @@ impl Ray {
             x: f64::cos(ray_angle),
             y: f64::sin(ray_angle),
         };
-        let slope = direction.y / direction.x;
         // Set Colour
         let mut visible = false;
         let mut tries = 1000;
@@ -75,11 +78,24 @@ impl Ray {
         Ray {
             origin,
             direction,
-            slope,
             colour,
         }
     }
 
+
+    /**
+     * Computes fate of this ray, 
+     * returns option wrapping direciton of new ray, 
+     * none if no new ray.
+     */
+    fn outcome(&self, obj: &Object, normal: &Vec2, rng: &mut PRNG) -> Option<Vec2> {
+        let mat = obj.get_material();
+
+        Some(Vec2{
+            x: 0.0,
+            y: 0.0,
+        })
+    }
 
     /**
      * Does *not* require 'normal' to already be normalized
@@ -93,17 +109,31 @@ impl Ray {
     }
 
 
+    /**
+     * Returns the resulting ray from colliding with object,
+     * returns none if it does not actually hit the object.
+     * Objects are sampled so two identical rays may not have the same outcome.
+     */
+    pub fn bounce(&self, obj: &Object, rng: &mut PRNG) -> Option<Self> {
+        /*
+        // Todo get actual ray start. And do an actual collision test
+        let origin = self.origin.clone();
 
-    pub fn bounce(&self, normal: &Vec2) -> Self {
-        let origin = self.origin;
+        //let (hit, normal) = obj.get_hit(self.origin, self.direction, rng);
 
-        let direction = self.reflect(normal);
+        //let direction = self.outcome(obj, normal, rng);
+        if direction.is_none() { return None; }
+        let direction = direction.unwrap();
+
+
         let slope = direction.y / direction.x;
-        Ray {
-            origin,
+        Option::Some(Ray {
+            origin: hit,
             direction,
-            slope,
             colour: self.colour,
-        }
+        })
+        */
+
+        None
     }
 }

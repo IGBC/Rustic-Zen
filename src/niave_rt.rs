@@ -2,8 +2,6 @@ use scene::{Scene, Light};
 use image::Image;
 use prng::PRNG;
 use sampler::Sample;
-use object::Object;
-use ray::Vec2;
 use ray::Ray;
 
 pub struct Renderer<'a> {
@@ -29,6 +27,7 @@ impl<'a> Renderer<'a> {
 
     fn trace_ray(&self, rng: &mut PRNG) {
         let l = self.choose_light(rng);
+        let ray = Ray::new(l, rng);
         //TODO: init ray
 
     }

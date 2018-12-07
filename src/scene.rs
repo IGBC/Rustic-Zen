@@ -14,9 +14,9 @@ pub struct Light {
 
 #[derive(Clone, Copy, Debug)]
 pub struct Material {
-    d: f64,
-    t: f64,
-    r: f64,
+    pub d: f64,
+    pub t: f64,
+    pub r: f64,
 }
 
 #[derive(Clone, Copy)]
