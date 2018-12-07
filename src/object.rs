@@ -55,13 +55,13 @@ impl<'a> Object<'a> {
                 y_s.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
                 let p0 = Point {
-                    x: x_s[0] as f32,
-                    y: y_s[0] as f32,
+                    x: x_s[0],
+                    y: y_s[0],
                 };
                 
                 let p1 = Point {
-                    x: x_s[x_s.len()] as f32,
-                    y: y_s[y_s.len()] as f32,
+                    x: x_s[x_s.len()],
+                    y: y_s[y_s.len()],
                 };
 
                 return Rect::from_points(&p0, &p1);
@@ -91,22 +91,22 @@ impl<'a> Object<'a> {
         let (s1, sd) = match self {
             Object::Curve{x0, y0, dx, dy, ..} => (
                 Point{
-                    x: x0.val(rng) as f32,
-                    y: y0.val(rng) as f32,
+                    x: x0.val(rng),
+                    y: y0.val(rng),
                 },
                 Point{
-                    x: dx.val(rng) as f32,
-                    y: dy.val(rng) as f32,
+                    x: dx.val(rng),
+                    y: dy.val(rng),
                 }),
 
             Object::Line{x0, y0, dx, dy, ..} => (
                 Point{
-                    x: x0.val(rng) as f32,
-                    y: y0.val(rng) as f32,
+                    x: x0.val(rng),
+                    y: y0.val(rng),
                 },
                 Point{
-                    x: dx.val(rng) as f32,
-                    y: dy.val(rng) as f32,
+                    x: dx.val(rng),
+                    y: dy.val(rng),
                 }),
         };
 
@@ -137,8 +137,8 @@ impl<'a> Object<'a> {
                     y: origin.y + distance * dir.y,
                 },
                 Point {
-                    x: f32::cos(rad as f32),
-                    y: f32::sin(rad as f32),
+                    x: f64::cos(rad),
+                    y: f64::sin(rad),
                 })
             }
         };

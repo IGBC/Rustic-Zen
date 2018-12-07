@@ -39,7 +39,7 @@ struct QuadTreeConfig {
     max_children: usize,
     min_children: usize,
     max_depth: usize,
-    epsilon: f32,
+    epsilon: f64,
 }
 
 /// The main QuadTree structure.  Mainly supports inserting, removing,

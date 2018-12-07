@@ -3,18 +3,13 @@ use prng::PRNG;
 use spectrum::wavelength_to_colour;
 use std::f64::consts::PI;
 use object::Object;
-
-#[derive(Clone)]
-pub struct Vec2 {
-    x: f64, 
-    y: f64,
-}
+use aabb_quadtree::geom::{Point, Vector};
 
 
 struct IntersectionData<'a> {
     ray: Ray,
-    point: Vec2,
-    normal: Vec2,
+    point: Point,
+    normal: Vector,
     distance: f64,
     hit: Option<&'a Object<'a>>,
 }
@@ -31,8 +26,8 @@ impl<'a> IntersectionData<'a> {
 
 
 pub struct Ray {
-    origin: Vec2,
-    direction: Vec2,
+    origin: Point,
+    direction: Vector,
     colour: (u16, u16, u16),
 }
 
@@ -46,13 +41,13 @@ impl Ray {
         let cart_y = light.y.val(rng);
         let polar_angle = light.polar_angle.val(rng);
         let polar_dist  = light.polar_distance.val(rng);
-        let origin = Vec2 {
+        let origin = Point {
             x: cart_x + f64::cos(polar_angle) * polar_dist,
             y: cart_y + f64::sin(polar_angle) * polar_dist,
         };
         let ray_angle = light.ray_angle.val(rng) * (PI / 180.0);
         // Set Angle
-        let direction = Vec2 {
+        let direction = Vector {
             x: f64::cos(ray_angle),
             y: f64::sin(ray_angle),
         };
@@ -88,24 +83,24 @@ impl Ray {
      * returns option wrapping direciton of new ray, 
      * none if no new ray.
      */
-    fn outcome(&self, obj: &Object, normal: &Vec2, rng: &mut PRNG) -> Option<Vec2> {
+    fn outcome(&self, obj: &Object, normal: &Vector, rng: &mut PRNG) -> Option<Vector> {
         let mat = obj.get_material();
 
-        Some(Vec2{
+        Some( Vector {
             x: 0.0,
             y: 0.0,
-        })
+        } )
     }
 
     /**
      * Does *not* require 'normal' to already be normalized
      */
-    fn reflect(&self, normal: &Vec2) -> Vec2 {
+    fn reflect(&self, normal: &Vector) -> Vector {
         let t: f64 = 2.0 * (normal.x * self.direction.x + normal.y * self.direction.y) /
             (normal.x * normal.x + normal.y * normal.y);
         let x = self.direction.x - t * normal.x;
         let y = self.direction.y - t * normal.y;
-        Vec2 {x, y}
+        Vector {x, y}
     }
 
 

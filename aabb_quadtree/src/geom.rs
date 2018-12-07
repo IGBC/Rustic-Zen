@@ -5,14 +5,14 @@ use std::ops::{Add, Neg, Sub};
 
 #[derive(PartialOrd, PartialEq, Copy, Clone, Debug)]
 pub struct Point {
-    pub x: f32,
-    pub y: f32,
+    pub x: f64,
+    pub y: f64,
 }
 
 #[derive(PartialOrd, PartialEq, Copy, Clone, Debug)]
 pub struct Vector {
-    pub x: f32,
-    pub y: f32,
+    pub x: f64,
+    pub y: f64,
 }
 
 #[derive(PartialOrd, PartialEq, Copy, Clone, Debug)]
@@ -78,7 +78,7 @@ impl Sub<Point> for Point {
 }
 
 impl Rect {
-    pub fn centered_with_radius(p1: &Point, radius: f32) -> Rect {
+    pub fn centered_with_radius(p1: &Point, radius: f64) -> Rect {
         let v = Vector { x: radius, y: radius };
         Rect::from_points(&(*p1 - v), &(*p1 + v))
     }
@@ -99,7 +99,7 @@ impl Rect {
     }
 
     pub fn null() -> Rect {
-        let nan = ::std::f32::NAN;
+        let nan = ::std::f64::NAN;
         Rect {
             top_left: Point { x: nan, y: nan },
             bottom_right: Point { x: nan, y: nan },
@@ -113,7 +113,7 @@ impl Rect {
         }
     }
 
-    pub fn expand(&self, left: f32, top: f32, right: f32, bottom: f32) 
+    pub fn expand(&self, left: f64, top: f64, right: f64, bottom: f64) 
 -> Rect {
         let top_left_vec = Vector { x: left, y: top };
         let bottom_right_vec = Vector { x: right, y: bottom };
@@ -123,18 +123,18 @@ impl Rect {
         }
     }
 
-    pub fn width(&self) -> f32 { self.bottom_right.x - self.top_left.x }
+    pub fn width(&self) -> f64 { self.bottom_right.x - self.top_left.x }
 
-    pub fn height(&self) -> f32 { self.bottom_right.y - self.top_left.y 
+    pub fn height(&self) -> f64 { self.bottom_right.y - self.top_left.y 
 }
 
-    pub fn left(&self) -> f32 { self.top_left.x }
+    pub fn left(&self) -> f64 { self.top_left.x }
 
-    pub fn right(&self) -> f32 { self.bottom_right.x }
+    pub fn right(&self) -> f64 { self.bottom_right.x }
 
-    pub fn top(&self) -> f32 { self.top_left.y }
+    pub fn top(&self) -> f64 { self.top_left.y }
 
-    pub fn bottom(&self) -> f32 { self.bottom_right.y }
+    pub fn bottom(&self) -> f64 { self.bottom_right.y }
 
     pub fn top_left(&self) -> Point { self.top_left }
 
@@ -195,14 +195,14 @@ self.bottom_right.x.is_nan() || self.bottom_right.y.is_nan()
     }
 
     pub fn expand_to_include(&mut self, point: &Point) {
-        fn min(a: f32, b: f32) -> f32 {
+        fn min(a: f64, b: f64) -> f64 {
             if a.is_nan() { return b; }
             if b.is_nan() { return a; }
             if a < b { return a; }
             return b;
         }
 
-        fn max(a: f32, b: f32) -> f32 {
+        fn max(a: f64, b: f64) -> f64 {
             if a.is_nan() { return b; }
             if b.is_nan() { return a; }
             if a > b { return a; }
@@ -319,14 +319,14 @@ y: bottom })
         ]
     }
 
-    pub fn close_to(&self, other: &Rect, epsilon: f32) -> bool {
+    pub fn close_to(&self, other: &Rect, epsilon: f64) -> bool {
         self.top_left.close_to(&other.top_left, epsilon) && 
 self.bottom_right.close_to(&other.bottom_right, epsilon)
     }
 }
 
 impl Vector {
-    pub fn magnitude(&self) -> f32 { (self.x * self.x + self.y * 
+    pub fn magnitude(&self) -> f64 { (self.x * self.x + self.y * 
 self.y).sqrt() }
 
     pub fn normalized(&self) -> Vector {
@@ -341,24 +341,24 @@ self.y).sqrt() }
         }
     }
 
-    pub fn scale_e(&self, sx: f32, sy: f32) -> Vector { Vector { x: 
+    pub fn scale_e(&self, sx: f64, sy: f64) -> Vector { Vector { x: 
 self.x * sx, y: self.y * sy } }
 
-    pub fn cross(&self, other: &Vector) -> f32 { self.x * other.y - 
+    pub fn cross(&self, other: &Vector) -> f64 { self.x * other.y - 
 self.y * other.x }
 
-    pub fn dot(&self, other: &Vector) -> f32 { self.x * other.x + self.y 
+    pub fn dot(&self, other: &Vector) -> f64 { self.x * other.x + self.y 
 * other.y }
 }
 
 impl Point {
-    pub fn close_to(&self, other: &Point, epsilon: f32) -> bool { 
+    pub fn close_to(&self, other: &Point, epsilon: f64) -> bool { 
 self.distance_2(other) < epsilon * epsilon }
 
-    pub fn distance(&self, other: &Point) -> f32 { 
+    pub fn distance(&self, other: &Point) -> f64 { 
 self.distance_2(other).sqrt() }
 
-    pub fn distance_2(&self, other: &Point) -> f32 {
+    pub fn distance_2(&self, other: &Point) -> f64 {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
         dx * dx + dy * dy
