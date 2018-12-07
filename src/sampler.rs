@@ -83,7 +83,7 @@ mod tests {
         }
     }
 
-        #[test]
+    #[test]
     fn val_range() {
         let mut rng = PRNG::seed(0);
         

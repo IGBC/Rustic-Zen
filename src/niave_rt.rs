@@ -31,8 +31,18 @@ impl<'a> Renderer<'a> {
     fn trace_ray(&self, rng: &mut PRNG) {
         let l = self.choose_light(rng);
         let ray = Ray::new(l, rng);
-        //TODO: init ray
-
+        for _bounces in 0 .. 1000 {
+            for obj in self.scene.objects.iter() {
+                let mut i: Vec<Ray> = Vec::new();
+                match ray.bounce(obj, rng) {
+                    Some(r) => { i.push(r) },
+                    None => {},
+                };
+                if i.is_empty() {
+                    return;
+                }
+            }
+        }
     }
 }
 

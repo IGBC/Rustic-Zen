@@ -76,6 +76,49 @@ impl<'a> Object<'a> {
         }
     }
 
+    fn intersect_edge(s1: Point, sd: Point, origin: Point, dir: Vector) -> bool {
+        let slope = dir.y / dir.x;
+        let alpha = ((s1.x - origin.x) * slope + (origin.y - s1.y)) / (sd.y - sd.x * slope);
+        if alpha < 0.0 { return false; }
+        if alpha > 1.0 { return false; }
+
+        let distance = (s1.x + sd.x * alpha - origin.x) / dir.x;
+        if distance < 0.0 { return false; } 
+        return true;
+    }
+
+    pub fn hit_box(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> bool {
+        // Get bounding box 
+        let bb = self.bounds();
+        if bb.contains(origin) {
+            return true;
+        }
+        /*
+        //isn't it cheaper just to test the object?
+
+        //top edge
+        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
+            return true
+        } 
+
+        //bottom edge
+        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
+            return true
+        } 
+
+        
+        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
+            return true
+        } 
+
+
+        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
+            return true
+        } 
+        */
+        return false;
+    }
+
     /**
      * Tests if the inbound ray actually hit the object,
      * if so it returns the coords of the hit, followed by the normal
@@ -188,5 +231,55 @@ mod tests {
         assert_eq!(b.x, -10.0);
         assert_eq!(b.y, 10.0);
         //normal is not normalised
+    }
+
+    #[test]
+    fn miss_line_1() {
+        let mut rng = PRNG::seed(0);
+
+        let m = Material {
+            d: 0.3, r: 0.3, t: 0.3, 
+        };
+
+        let obj = Object::Line{
+            x0: Sample::Constant(0.0),
+            y0: Sample::Constant(0.0),
+            dx: Sample::Constant(10.0),
+            dy: Sample::Constant(10.0),
+            material: &m,
+        };
+
+        let origin = Point {x: 30.0, y: 0.0};
+        let dir   = Vector {x: -1.0, y: 1.0};
+
+
+        let a = obj.get_hit(&origin, &dir, &mut rng);
+
+        assert!(a.is_none());
+    }
+    
+    #[test]
+    fn miss_line_2() {
+        let mut rng = PRNG::seed(0);
+
+        let m = Material {
+            d: 0.3, r: 0.3, t: 0.3, 
+        };
+
+        let obj = Object::Line{
+            x0: Sample::Constant(0.0),
+            y0: Sample::Constant(0.0),
+            dx: Sample::Constant(10.0),
+            dy: Sample::Constant(10.0),
+            material: &m,
+        };
+
+        let origin = Point {x: 10.0, y: 0.0};
+        let dir   = Vector {x: 1.0, y: 1.0};
+
+
+        let a = obj.get_hit(&origin, &dir, &mut rng);
+
+        assert!(a.is_none());
     }
 }

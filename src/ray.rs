@@ -10,6 +10,7 @@ pub struct Ray {
     origin: Point,
     direction: Vector,
     colour: (u16, u16, u16),
+    bounces: u32,
 }
 
 impl Ray {
@@ -55,6 +56,7 @@ impl Ray {
             origin,
             direction,
             colour,
+            bounces: 1000,
         }
     }
 
@@ -117,6 +119,7 @@ impl Ray {
             origin: hit,
             direction,
             colour: self.colour,
+            bounces: self.bounces - 1,
         })
     }
 }
@@ -137,9 +140,7 @@ mod test {
             x: Sample::Constant(100.0),
             y: Sample::Constant(100.0),
             polar_angle: Sample::Range(360.0, 0.0),
-       
-
-     polar_distance: Sample::Constant(1.0),
+            polar_distance: Sample::Constant(1.0),
             ray_angle: Sample::Range(360.0, 0.0),
             wavelength: Sample::Blackbody(0.0),
         };
