@@ -1,4 +1,4 @@
-use aabb_quadtree::geom::{Point, Rect};
+use aabb_quadtree::geom::{Point, Vector, Rect};
 use scene::Material;
 use sampler::Sample;
 use prng::PRNG;
@@ -86,7 +86,7 @@ impl<'a> Object<'a> {
      * This test assumes you have done a box test to 
      * check the bounds of the line first
      */
-    pub fn get_hit(&self, origin: &Point, dir: &Point, rng: &mut PRNG) -> Option<(Point, Point)> {
+    pub fn get_hit(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> Option<(Vector, Vector)> {
         // Get s1 and sD from samples
         let (s1, sd) = match self {
             Object::Curve{x0, y0, dx, dy, ..} => (
@@ -120,11 +120,11 @@ impl<'a> Object<'a> {
 
         let (hit, norm) = match self {
             Object::Line{..} => (
-                Point {
+                Vector {
                     x: origin.x + distance * dir.x,
                     y: origin.y + distance * dir.y,
                 },
-                Point {
+                Vector {
                     x: -sd.y,
                     y: sd.x,
                 }
@@ -132,11 +132,11 @@ impl<'a> Object<'a> {
             Object::Curve{a0, da, ..} => {
                 let deg = a0.val(rng) + alpha as f64 * da.val(rng);
                 let rad = deg * (PI / 180.0);
-                (Point {
+                (Vector {
                     x: origin.x + distance * dir.x,
                     y: origin.y + distance * dir.y,
                 },
-                Point {
+                Vector {
                     x: f64::cos(rad),
                     y: f64::sin(rad),
                 })
@@ -152,7 +152,7 @@ mod tests {
     use super::Object;
     use scene::Material;
     use sampler::Sample;
-    use aabb_quadtree::geom::Point;
+    use aabb_quadtree::geom::{ Point, Vector };
     use prng::PRNG;
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
         };
 
         let origin = Point {x: 10.0, y: 0.0};
-        let dir    = Point {x: -1.0, y: 1.0};
+        let dir   = Vector {x: -1.0, y: 1.0};
 
 
         let a = obj.get_hit(&origin, &dir, &mut rng);
