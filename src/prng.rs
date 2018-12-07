@@ -55,3 +55,42 @@ impl PRNG {
         return a + (self.uniform_f64() * (b-a));
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::PRNG;
+    use rand::prelude::*;
+
+    #[test]
+    fn uniform_f64() {
+        let mut rng = PRNG::seed(0);
+        for i in 0 .. 100000 {
+            let f = rng.uniform_f64();
+            println!("{}, {}", i, f);
+            assert!(f >= 0.0);
+            assert!(f <= 1.0);    
+        }
+    }
+
+    #[test]
+    fn uniform_range() {
+        //This test is O(N²) so you might want to ommit this test
+        let mut stdrng = rand::thread_rng();
+        for _ in 0 .. 1000 {
+            let mut f1: f64 = stdrng.gen();
+            let mut f2: f64 = stdrng.gen();
+            if f1 < f2 {
+                let tmp = f1;
+                f1 = f2;
+                f2 = tmp;
+            }
+            let mut rng = PRNG::seed(0);
+
+            for _ in 0 .. 1000 {
+                let f = rng.uniform_range(f1, f2);
+                assert!(f >= f2);
+                assert!(f <= f1);    
+            }
+        }
+    }
+}

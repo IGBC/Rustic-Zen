@@ -85,11 +85,24 @@ impl Ray {
      */
     fn outcome(&self, obj: &Object, normal: &Vector, rng: &mut PRNG) -> Option<Vector> {
         let mat = obj.get_material();
+        let f = rng.uniform_f64();
+        
+        if f <= mat.d {
+            let angle = rng.uniform_range(2.0 * PI, 0.0);
+            return Some(Vector{x: f64::cos(angle), y: f64::sin(angle)});
+        }
 
-        Some( Vector {
-            x: 0.0,
-            y: 0.0,
-        } )
+        if f <= mat.d + mat.r {
+            let angle = self.reflect(normal);
+            return Some(angle);
+        }
+
+        if f <= mat.d + mat.r + mat.t {
+            let angle = self.direction.clone();
+            return Some(angle);
+        }
+
+        None
     }
 
     /**
