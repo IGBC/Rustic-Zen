@@ -110,25 +110,17 @@ impl Ray {
      * Objects are sampled so two identical rays may not have the same outcome.
      */
     pub fn bounce(&self, obj: &Object, rng: &mut PRNG) -> Option<Self> {
-        /*
         // Todo get actual ray start. And do an actual collision test
-        let origin = self.origin.clone();
+        let (hit, normal) = obj.get_hit(&self.origin, &self.direction, rng).unwrap();
 
-        //let (hit, normal) = obj.get_hit(self.origin, self.direction, rng);
-
-        //let direction = self.outcome(obj, normal, rng);
+        let direction = self.outcome(obj, &normal, rng);
         if direction.is_none() { return None; }
         let direction = direction.unwrap();
 
-
-        let slope = direction.y / direction.x;
         Option::Some(Ray {
             origin: hit,
             direction,
             colour: self.colour,
         })
-        */
-
-        None
     }
 }

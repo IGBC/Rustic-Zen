@@ -86,7 +86,7 @@ impl<'a> Object<'a> {
      * This test assumes you have done a box test to 
      * check the bounds of the line first
      */
-    pub fn get_hit(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> Option<(Vector, Vector)> {
+    pub fn get_hit(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> Option<(Point, Vector)> {
         // Get s1 and sD from samples
         let (s1, sd) = match self {
             Object::Curve{x0, y0, dx, dy, ..} => (
@@ -120,7 +120,7 @@ impl<'a> Object<'a> {
 
         let (hit, norm) = match self {
             Object::Line{..} => (
-                Vector {
+                Point {
                     x: origin.x + distance * dir.x,
                     y: origin.y + distance * dir.y,
                 },
@@ -132,7 +132,7 @@ impl<'a> Object<'a> {
             Object::Curve{a0, da, ..} => {
                 let deg = a0.val(rng) + alpha as f64 * da.val(rng);
                 let rad = deg * (PI / 180.0);
-                (Vector {
+                (Point {
                     x: origin.x + distance * dir.x,
                     y: origin.y + distance * dir.y,
                 },
