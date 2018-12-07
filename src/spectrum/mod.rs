@@ -35,7 +35,7 @@ pub fn wavelength_to_colour(nm: f64) -> (u16, u16, u16) {
 }
 
 pub fn blackbody_wavelength(temp: f64, noise: f64) -> f64 {
-    let index: usize = (1 .. BLACKBODY_CDF_DATA.len()).find(|x| BLACKBODY_CDF_DATA[*x]>=noise).unwrap();
+    let index: usize = (1 .. BLACKBODY_CDF_DATA.len()).find(|x| BLACKBODY_CDF_DATA[*x]>=noise).expect("Blackbody Index out of range");
 
     let lower: f64 = BLACKBODY_CDF_DATA[index - 1];
     let upper: f64 = BLACKBODY_CDF_DATA[index];

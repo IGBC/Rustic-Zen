@@ -1,5 +1,6 @@
 use sampler::Sample;
 use object::Object;
+use aabb_quadtree::geom::Rect;
 
 #[derive(Clone, Copy)]
 pub struct Light {
@@ -19,19 +20,11 @@ pub struct Material {
     pub r: f64,
 }
 
-#[derive(Clone, Copy)]
-pub struct Viewport {
-    left: usize,
-    top: usize,
-    width: usize,
-    height: usize,
-}
-
 #[derive(Clone)]
 pub struct Scene<'a> {
     pub resolution_x: usize,
     pub resolution_y: usize,
-    pub viewport: Viewport,
+    pub viewport: Rect,
 
     pub seed: u32,
 

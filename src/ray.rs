@@ -6,25 +6,6 @@ use object::Object;
 use aabb_quadtree::geom::{Point, Vector};
 
 
-struct IntersectionData<'a> {
-    ray: Ray,
-    point: Point,
-    normal: Vector,
-    distance: f64,
-    hit: Option<&'a Object<'a>>,
-}
-
-impl<'a> IntersectionData<'a> {
-   pub fn new() {
-
-   }
-
-   pub fn ray_intersect()->bool {
-       return false;
-   }
-}
-
-
 pub struct Ray {
     origin: Point,
     direction: Vector,
@@ -126,14 +107,43 @@ impl Ray {
         // Todo get actual ray start. And do an actual collision test
         let (hit, normal) = obj.get_hit(&self.origin, &self.direction, rng).unwrap();
 
-        let direction = self.outcome(obj, &normal, rng);
-        if direction.is_none() { return None; }
-        let direction = direction.unwrap();
+        let outcome = self.outcome(obj, &normal, rng);
+        let direction = match outcome {
+            Some(o) => o,
+            None => {return None;}, 
+        };
 
         Option::Some(Ray {
             origin: hit,
             direction,
             colour: self.colour,
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use scene::Light;
+    use sampler::Sample;
+    use prng::PRNG;
+    use super::Ray;
+
+    #[test]
+    fn new_works() {
+        let mut rng = PRNG::seed(0); 
+
+        let l = Light{
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(100.0),
+            y: Sample::Constant(100.0),
+            polar_angle: Sample::Range(360.0, 0.0),
+       
+
+     polar_distance: Sample::Constant(1.0),
+            ray_angle: Sample::Range(360.0, 0.0),
+            wavelength: Sample::Blackbody(0.0),
+        };
+
+        Ray::new(&l, &mut rng);
     }
 }

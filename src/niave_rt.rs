@@ -3,6 +3,8 @@ use image::Image;
 use prng::PRNG;
 use sampler::Sample;
 use ray::Ray;
+use aabb_quadtree::QuadTree;
+use object::Object;
 
 pub struct Renderer<'a> {
     scene: Scene<'a>,
@@ -10,6 +12,7 @@ pub struct Renderer<'a> {
     seed: u32, //current seed
     total_light_power: f64
 }
+
 
 impl<'a> Renderer<'a> {
     fn choose_light(&self, rng: &mut PRNG) -> &Light {
@@ -22,7 +25,7 @@ impl<'a> Renderer<'a> {
                 return light;
             }
         }
-        return self.scene.lights.last().unwrap();
+        return self.scene.lights.last().expect("Scene has no lights");
     }
 
     fn trace_ray(&self, rng: &mut PRNG) {
@@ -40,10 +43,15 @@ fn trace_ray() {
     //
 }
 
-pub fn render(s: Scene) -> Image {
+pub fn render(s: &Scene) -> Image {
     let mut img = Image::new(s.resolution_x, s.resolution_y);
-    
-    
+    let mut qt: QuadTree<&Object> = QuadTree::default(s.viewport);
+
+    for o in s.objects.iter() {
+        qt.insert_with_box(o, o.bounds());
+    }
+
     // return rendered image.
     img
 }
+
