@@ -60,6 +60,9 @@ impl Ray {
         }
     }
 
+    pub fn get_origin(&self) -> &Point {
+        return &self.origin;
+    }
 
     /**
      * Computes fate of this ray, 
@@ -97,6 +100,44 @@ impl Ray {
         let x = self.direction.x - t * normal.x;
         let y = self.direction.y - t * normal.y;
         Vector {x, y}
+    }
+
+    pub fn collision_list(&self, obj_list: &Vec<Object>, rng: &mut PRNG) -> Option<Self> {
+        // get closest Collision
+        // Mercifully O(N)
+        let mut c_distance = std::f64::MAX;
+        let mut c_hit: Option<Point> = None;
+        let mut c_res: Option<Self> = None;
+        for i in obj_list.iter() {
+            let result = self.bounce(i, rng);
+            match result {
+                None => {},
+                Some(i) => {
+                    let dist = self.origin.distance(i.get_origin());
+                    if dist < c_distance {
+                        c_distance = dist;
+                        c_hit = Some(i.get_origin().clone());
+                        c_res = Some(i);
+                    }
+                }
+            }
+        }
+
+        match c_hit {
+            None => { // We hit nothing, we need to test on the viewport
+                unimplemented!();
+            },
+            Some(p) => { //this is the closest point we hit, render now!
+                unimplemented!();
+            },
+        }
+
+        // if we have bounces left Return the result else None.
+        if self.bounces > 0 {
+            c_res
+        } else {
+            None
+        }
     }
 
 

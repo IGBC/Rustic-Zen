@@ -199,6 +199,8 @@ mod tests {
     use prng::PRNG;
 
     #[test]
+    /// Ray hits object test
+    /// Test result should be a hit at (5,5)
     fn hit_line_1() {
         let mut rng = PRNG::seed(0);
 
@@ -234,6 +236,9 @@ mod tests {
     }
 
     #[test]
+    /// Vector misses the object test
+    /// Test result should be None as Ray crosses dy/dx
+    /// Past the end of the object.
     fn miss_line_1() {
         let mut rng = PRNG::seed(0);
 
@@ -259,6 +264,9 @@ mod tests {
     }
     
     #[test]
+    /// Vector Going the wrong way test
+    /// Test result should be None, as Ray is going 180°
+    /// in the wrong direction to hit the object. 
     fn miss_line_2() {
         let mut rng = PRNG::seed(0);
 

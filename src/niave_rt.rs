@@ -31,6 +31,8 @@ impl<'a> Renderer<'a> {
     fn trace_ray(&self, rng: &mut PRNG) {
         let l = self.choose_light(rng);
         let ray = Ray::new(l, rng);
+        
+        //move this into the raytrace?
         for _bounces in 0 .. 1000 {
             for obj in self.scene.objects.iter() {
                 let mut i: Vec<Ray> = Vec::new();
