@@ -3,7 +3,7 @@ use prng::PRNG;
 use spectrum::wavelength_to_colour;
 use std::f64::consts::PI;
 use object::Object;
-use aabb_quadtree::geom::{Point, Vector};
+use aabb_quadtree::geom::{Point, Vector, Rect};
 
 
 pub struct Ray {
@@ -121,6 +121,15 @@ impl Ray {
             colour: self.colour,
             bounces: self.bounces - 1,
         })
+    }
+
+    pub fn closest_aabb(&self, aabb: Rect) -> Option<Point> {
+        Some(Point{ x: 0.0, y: 0.0 })
+    }
+
+    pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
+        
+        Some(Point{ x: 0.0, y: 0.0 })
     }
 }
 

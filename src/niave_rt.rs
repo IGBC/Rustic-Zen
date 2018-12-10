@@ -46,13 +46,6 @@ impl<'a> Renderer<'a> {
     }
 }
 
-
-fn trace_ray() {
-    //get start pos
-    //collide with all opjects
-    //
-}
-
 pub fn render(s: &Scene) -> Image {
     let mut img = Image::new(s.resolution_x, s.resolution_y);
     let mut qt: QuadTree<&Object> = QuadTree::default(s.viewport);
