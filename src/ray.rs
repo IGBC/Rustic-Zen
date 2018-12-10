@@ -4,6 +4,7 @@ use spectrum::wavelength_to_colour;
 use std::f64::consts::PI;
 use object::Object;
 use aabb_quadtree::geom::{Point, Vector, Rect};
+use image::Image;
 
 
 pub struct Ray {
@@ -102,7 +103,7 @@ impl Ray {
         Vector {x, y}
     }
 
-    pub fn collision_list(&self, obj_list: &Vec<Object>, rng: &mut PRNG) -> Option<Self> {
+    pub fn collision_list(&self, obj_list: &Vec<Object>, viewport: Rect, image: &mut Image, rng: &mut PRNG) -> Option<Self> {
         // get closest Collision
         // Mercifully O(N)
         let mut c_distance = std::f64::MAX;
@@ -123,14 +124,13 @@ impl Ray {
             }
         }
 
-        match c_hit {
-            None => { // We hit nothing, we need to test on the viewport
-                unimplemented!();
-            },
-            Some(p) => { //this is the closest point we hit, render now!
-                unimplemented!();
-            },
-        }
+        let end = match c_hit {
+            None =>  // We hit nothing, we need to test on the viewport!
+                self.furthest_aabb(viewport).expect("Ray exists outside of Viewport"),
+            Some(p) => p, //this is the closest point we hit!
+        };
+
+        image.draw_line(self.colour, self.origin.x, self.origin.y, end.x, end.y);
 
         // if we have bounces left Return the result else None.
         if self.bounces > 0 {
@@ -164,13 +164,139 @@ impl Ray {
         })
     }
 
-    pub fn closest_aabb(&self, aabb: Rect) -> Option<Point> {
-        Some(Point{ x: 0.0, y: 0.0 })
+    fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
+        let slope = self.direction.y / self.direction.x;
+        let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
+        if alpha < 0.0 { return None; }
+        if alpha > 1.0 { return None; }
+
+        let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
+        if distance < 0.0 { return None; } 
+        return Some(distance);
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
+        let mut max_dist = 0.0;
+        let mut max: Option<Point> = None;
+        // top
+        match self.intersect_edge(aabb.top_left(), aabb.top_right()) {
+            None => (),
+            Some(d) => {
+                if d > max_dist {
+                    max_dist = d;
+                    max = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+
+        // bottom
+        match self.intersect_edge(aabb.bottom_left(), aabb.bottom_right()) {
+            None => (),
+            Some(d) => {
+                if d > max_dist {
+                    max_dist = d;
+                    max = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+
+        // left
+        match self.intersect_edge(aabb.top_left(), aabb.bottom_left()) {
+            None => (),
+            Some(d) => {
+                if d > max_dist {
+                    max_dist = d;
+                    max = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+
+        // right
+        match self.intersect_edge(aabb.top_right(), aabb.bottom_right()) {
+            None => (),
+            Some(d) => {
+                if d > max_dist {
+                    max_dist = d;
+                    max = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
         
-        Some(Point{ x: 0.0, y: 0.0 })
+        max
+    }
+
+    pub fn closest_aabb(&self, aabb: Rect) -> Option<Point> {
+        let mut min_dist = std::f64::MAX;
+        let mut min: Option<Point> = None;
+        // top
+        match self.intersect_edge(aabb.top_left(), aabb.top_right()) {
+            None => (),
+            Some(d) => {
+                if d < min_dist {
+                    min_dist = d;
+                    min = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+
+        // bottom
+        match self.intersect_edge(aabb.bottom_left(), aabb.bottom_right()) {
+            None => (),
+            Some(d) => {
+                if d < min_dist {
+                    min_dist = d;
+                    min = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+
+        // left
+        match self.intersect_edge(aabb.top_left(), aabb.bottom_left()) {
+            None => (),
+            Some(d) => {
+                if d < min_dist {
+                    min_dist = d;
+                    min = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+
+        // right
+        match self.intersect_edge(aabb.top_right(), aabb.bottom_right()) {
+            None => (),
+            Some(d) => {
+                if d < min_dist {
+                    min_dist = d;
+                    min = Some(Point {
+                        x: self.origin.x + d * self.direction.x,
+                        y: self.origin.y + d * self.direction.y,
+                    })
+                }
+            }
+        }
+        
+        min
     }
 }
 

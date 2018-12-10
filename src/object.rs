@@ -76,49 +76,6 @@ impl<'a> Object<'a> {
         }
     }
 
-    fn intersect_edge(s1: Point, sd: Point, origin: Point, dir: Vector) -> bool {
-        let slope = dir.y / dir.x;
-        let alpha = ((s1.x - origin.x) * slope + (origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 { return false; }
-        if alpha > 1.0 { return false; }
-
-        let distance = (s1.x + sd.x * alpha - origin.x) / dir.x;
-        if distance < 0.0 { return false; } 
-        return true;
-    }
-
-    pub fn hit_box(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> bool {
-        // Get bounding box 
-        let bb = self.bounds();
-        if bb.contains(origin) {
-            return true;
-        }
-        /*
-        //isn't it cheaper just to test the object?
-
-        //top edge
-        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
-            return true
-        } 
-
-        //bottom edge
-        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
-            return true
-        } 
-
-        
-        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
-            return true
-        } 
-
-
-        if Self::intersect_edge(bb.top_left(), bb.top_right(), origin, dir) {
-            return true
-        } 
-        */
-        return false;
-    }
-
     /**
      * Tests if the inbound ray actually hit the object,
      * if so it returns the coords of the hit, followed by the normal

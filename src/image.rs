@@ -18,7 +18,7 @@ impl Image {
     }
 
     #[inline]
-    fn plot(&mut self, colour: (i16, i16, i16), x: usize, y: usize, intensity: f64) {
+    fn plot(&mut self, colour: (u16, u16, u16), x: usize, y: usize, intensity: f64) {
         let i = x + (y * self.width);
         let mut p = self.pixels[i];
         
@@ -29,7 +29,7 @@ impl Image {
         self.pixels[i] = p;
     }
 
-    pub fn draw_line(&mut self, colour: (i16, i16, i16), mut x0: f64, mut y0: f64, mut x1: f64, mut y1: f64) {
+    pub fn draw_line(&mut self, colour: (u16, u16, u16), mut x0: f64, mut y0: f64, mut x1: f64, mut y1: f64) {
         let dx: f64 = (x1 - x0).abs();
         let dy: f64 = (y1 - y0).abs();
 

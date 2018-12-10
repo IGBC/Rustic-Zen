@@ -3,8 +3,6 @@ use image::Image;
 use prng::PRNG;
 use sampler::Sample;
 use ray::Ray;
-use aabb_quadtree::QuadTree;
-use object::Object;
 
 pub struct Renderer<'a> {
     scene: Scene<'a>,
@@ -28,35 +26,23 @@ impl<'a> Renderer<'a> {
         return self.scene.lights.last().expect("Scene has no lights");
     }
 
-    fn trace_ray(&self, rng: &mut PRNG) {
+    fn trace_ray(&self, img: &mut Image, rng: &mut PRNG) {
         let l = self.choose_light(rng);
-        let ray = Ray::new(l, rng);
-        
-        //move this into the raytrace?
-        for _bounces in 0 .. 1000 {
-            for obj in self.scene.objects.iter() {
-                let mut i: Vec<Ray> = Vec::new();
-                match ray.bounce(obj, rng) {
-                    Some(r) => { i.push(r) },
-                    None => {},
-                };
-                if i.is_empty() {
-                    return;
-                }
-            }
+        let mut ray = Some(Ray::new(l, rng));
+        while ray.is_some() {
+            ray = ray.unwrap().collision_list(&self.scene.objects, self.scene.viewport, img, rng);
         }
     }
-}
 
-pub fn render(s: &Scene) -> Image {
-    let mut img = Image::new(s.resolution_x, s.resolution_y);
-    let mut qt: QuadTree<&Object> = QuadTree::default(s.viewport);
+    pub fn render(&self) -> Image {
+        let mut img = Image::new(self.scene.resolution_x, self.scene.resolution_y);
+        let mut rng = PRNG::seed(self.scene.seed);
+        for _i in 0..self.scene.rays {
+            self.trace_ray(&mut img, &mut rng);
+        }
 
-    for o in s.objects.iter() {
-        qt.insert_with_box(o, o.bounds());
+        // return rendered image.
+        img
     }
-
-    // return rendered image.
-    img
 }
 
