@@ -88,7 +88,7 @@ mod tests {
             x: Sample::Constant(10.0),
             y: Sample::Constant(10.0),
             polar_angle: Sample::Range(360.0, 0.0),
-            polar_distance: Sample::Constant(1.0),
+            polar_distance: Sample::Constant(0.0),
             ray_angle: Sample::Range(360.0, 0.0),
             wavelength: Sample::Blackbody(0.0),
         };

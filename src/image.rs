@@ -3,13 +3,13 @@ use std::mem::swap;
 pub struct Image {
     width: usize,
     height: usize,
-    pixels: Vec<(i64, i64, i64)>,
+    pixels: Vec<(u64, u64, u64)>,
 }
 
 impl Image {
     pub fn new(width: usize, height: usize) -> Self {
         let len = width * height;
-        let pixels: Vec<(i64, i64, i64)> = vec![(0, 0, 0); len];
+        let pixels: Vec<(u64, u64, u64)> = vec![(0, 0, 0); len];
         Image {
             width,
             height,
@@ -22,9 +22,9 @@ impl Image {
         let i = x + (y * self.width);
         let mut p = self.pixels[i];
         
-        p.0 = p.0 + ((colour.0 as f64 * intensity).round() as i64);
-        p.1 = p.1 + ((colour.1 as f64 * intensity).round() as i64);
-        p.2 = p.2 + ((colour.2 as f64 * intensity).round() as i64);
+        p.0 = p.0.saturating_add((colour.0 as f64 * intensity).round() as u64);
+        p.1 = p.1.saturating_add((colour.1 as f64 * intensity).round() as u64);
+        p.2 = p.2.saturating_add((colour.2 as f64 * intensity).round() as u64);
 
         self.pixels[i] = p;
     }
