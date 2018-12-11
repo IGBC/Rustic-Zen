@@ -21,7 +21,7 @@ pub struct Material {
 }
 
 #[derive(Clone)]
-pub struct Scene<'a> {
+pub struct Scene {
     pub resolution_x: usize,
     pub resolution_y: usize,
     pub viewport: Rect,
@@ -35,6 +35,6 @@ pub struct Scene<'a> {
     pub gamma: f64,
 
     pub lights: Vec<Light>,
-    pub objects: Vec<Object<'a>>,
+    pub objects: Vec<Object>,
     pub materials: Vec<Material>,
 }

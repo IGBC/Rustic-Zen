@@ -148,7 +148,10 @@ impl Ray {
      */
     pub fn bounce(&self, obj: &Object, rng: &mut PRNG) -> Option<Self> {
         // Todo get actual ray start. And do an actual collision test
-        let (hit, normal) = obj.get_hit(&self.origin, &self.direction, rng).unwrap();
+        let (hit, normal) = match obj.get_hit(&self.origin, &self.direction, rng){
+            None => {return None},
+            Some((hit, normal)) => (hit, normal),
+        };
 
         let outcome = self.outcome(obj, &normal, rng);
         let direction = match outcome {

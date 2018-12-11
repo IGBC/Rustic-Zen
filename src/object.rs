@@ -5,16 +5,16 @@ use prng::PRNG;
 use std::f64::consts::PI;
 
 #[derive(Clone, Copy, Debug)]
-pub enum Object<'a> {
+pub enum Object {
     Line{
-        material: &'a Material,
+        material: Material,
         x0: Sample,
         y0: Sample,
         dx: Sample,
         dy: Sample,
     },
     Curve{
-        material: &'a Material,
+        material: Material,
         x0: Sample,
         y0: Sample,
         a0: Sample,
@@ -24,7 +24,7 @@ pub enum Object<'a> {
     },
 }
 
-impl<'a> Object<'a> {
+impl Object {
     /// Returns a rectangle enclosing The Object.
     /// Currently does not support curved lines, cos math is hard.
     pub fn bounds(&self) -> Rect {
@@ -170,7 +170,7 @@ mod tests {
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
             dy: Sample::Constant(10.0),
-            material: &m,
+            material: m,
         };
 
         let origin = Point {x: 10.0, y: 0.0};
@@ -208,7 +208,7 @@ mod tests {
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
             dy: Sample::Constant(10.0),
-            material: &m,
+            material: m,
         };
 
         let origin = Point {x: 30.0, y: 0.0};
@@ -236,7 +236,7 @@ mod tests {
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
             dy: Sample::Constant(10.0),
-            material: &m,
+            material: m,
         };
 
         let origin = Point {x: 10.0, y: 0.0};
