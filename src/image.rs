@@ -1,4 +1,6 @@
 use std::mem::swap;
+use prng::PRNG;
+use std::cmp;
 
 pub struct Image {
     width: usize,
@@ -96,4 +98,18 @@ impl Image {
             intery += gradient;
         }
     }
+
+    // fn to_rgb8(&self, scale: f64, exponent: f64) -> Vec<u8> {
+    //     let rng = PRNG::seed(0);
+    //     let rgb: Vec<u8> = Vec::new();
+    //     for i in self.pixels.iter() {
+    //         let (r,g,b) = i;
+    //         // red
+    //         let u:f64 = cmp::partial_max(0.0,r.clone() as f64 * scale);
+    //         let dither = rng.uniform_f64();
+    //         let v:f64 = 255.0 * cmp::partial_max(u, exponent) + dither;
+    //         let r8 = cmp::partial_max(0.0, cmp::partial_min(255.9,v));
+    //     }
+    //     return vec![];
+    // }
 }

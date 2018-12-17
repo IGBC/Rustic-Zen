@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![warn(missing_docs)]
+//#![feature(cmp_partial)]
 extern crate aabb_quadtree;
 
 #[cfg(test)]
