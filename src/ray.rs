@@ -175,20 +175,22 @@ impl Ray {
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
-        let mut max_dist = 0.0;
-        let mut max: Option<Point> = None;
+        let mut max_dist: Option<f64> = None;
         // top
         match self.intersect_edge(aabb.top_left(), aabb.top_right()) {
             None => (),
             Some(d) => {
                 println!("Hit top @ {}", d);
-                if d > max_dist {
-                    max_dist = d;
-                    max = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
+                max_dist = match max_dist {
+                    None => Some(d),
+                    Some(md) => {
+                        if d > md {
+                            Some(d)
+                        } else {
+                            max_dist
+                        }
+                    }
+                };  
             }
         }
 
@@ -197,13 +199,16 @@ impl Ray {
             None => (),
             Some(d) => {
                 println!("Hit bottom @ {}", d);
-                if d > max_dist {
-                    max_dist = d;
-                    max = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
+                max_dist = match max_dist {
+                    None => Some(d),
+                    Some(md) => {
+                        if d > md {
+                            Some(d)
+                        } else {
+                            max_dist
+                        }
+                    }
+                };  
             }
         }
 
@@ -212,13 +217,16 @@ impl Ray {
             None => (),
             Some(d) => {
                 println!("Hit left @ {}", d);
-                if d > max_dist {
-                    max_dist = d;
-                    max = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
+                max_dist = match max_dist {
+                    None => Some(d),
+                    Some(md) => {
+                        if d > md {
+                            Some(d)
+                        } else {
+                            max_dist
+                        }
+                    }
+                };  
             }
         }
 
@@ -227,22 +235,32 @@ impl Ray {
             None => (),
             Some(d) => {
                 println!("Hit right @ {}", d);
-                if d > max_dist {
-                    max_dist = d;
-                    max = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
+                max_dist = match max_dist {
+                    None => Some(d),
+                    Some(md) => {
+                        if d > md {
+                            Some(d)
+                        } else {
+                            max_dist
+                        }
+                    }
+                };  
             }
         }
         
         println!("origin, ({},{})", self.origin.x, self.origin.y);
         println!("direction, ({},{})", self.direction.x, self.direction.y);
-        //println!("output, ({},{})", max.unwrap().x, max.unwrap().y);
-        println!("distance: {}", max_dist);
 
-        max
+        match max_dist {
+            None => {return None;},
+            Some(d) => {
+                println!("distance: {}", d);
+                return Some(Point {
+                    x: self.origin.x + d * self.direction.x,
+                    y: self.origin.y + d * self.direction.y,
+                });
+            }
+        }
     }
 
     pub fn closest_aabb(&self, aabb: Rect) -> Option<Point> {
@@ -334,7 +352,7 @@ mod test {
     }
 
     #[test]
-    fn furthest_aabb_hits_horsiontal() {
+    fn furthest_aabb_hits_horziontal() {
         let mut rng = PRNG::seed(0); 
 
         let x_plus_light = Light{
