@@ -21,6 +21,14 @@ impl Image {
 
     #[inline]
     fn plot(&mut self, colour: (u16, u16, u16), x: usize, y: usize, intensity: f64) {
+        if x > self.width {
+            panic!("Bad x coord");
+        }
+
+        if y > self.height {
+            panic!("Bad y coord")
+        }
+
         let i = x + (y * self.width);
         let mut p = self.pixels[i];
         
