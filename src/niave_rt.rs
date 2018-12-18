@@ -110,7 +110,7 @@ mod tests {
         };
 
         let r = Renderer::new(s);
-        let img = r.render();
+        r.render();
     }
 }
 

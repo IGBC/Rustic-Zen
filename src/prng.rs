@@ -64,7 +64,7 @@ mod tests {
     #[test]
     fn uniform_f64() {
         let mut rng = PRNG::seed(0);
-        for i in 0 .. 100000 {
+        for _i in 0 .. 100000 {
             let f = rng.uniform_f64();
             assert!(f >= 0.0);
             assert!(f <= 1.0);    
