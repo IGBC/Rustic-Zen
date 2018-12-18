@@ -169,13 +169,9 @@ impl Ray {
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
         let slope = self.direction.y / self.direction.x;
-        let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 { return None; }
-        if alpha > 1.0 { return None; }
-
-        let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
+        let distance = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
         if distance < 0.0 { return None; } 
-        return Some(distance);
+        return Some(distance/2.0);
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
@@ -185,6 +181,7 @@ impl Ray {
         match self.intersect_edge(aabb.top_left(), aabb.top_right()) {
             None => (),
             Some(d) => {
+                println!("Hit top @ {}", d);
                 if d > max_dist {
                     max_dist = d;
                     max = Some(Point {
@@ -199,6 +196,7 @@ impl Ray {
         match self.intersect_edge(aabb.bottom_left(), aabb.bottom_right()) {
             None => (),
             Some(d) => {
+                println!("Hit bottom @ {}", d);
                 if d > max_dist {
                     max_dist = d;
                     max = Some(Point {
@@ -213,6 +211,7 @@ impl Ray {
         match self.intersect_edge(aabb.top_left(), aabb.bottom_left()) {
             None => (),
             Some(d) => {
+                println!("Hit left @ {}", d);
                 if d > max_dist {
                     max_dist = d;
                     max = Some(Point {
@@ -227,6 +226,7 @@ impl Ray {
         match self.intersect_edge(aabb.top_right(), aabb.bottom_right()) {
             None => (),
             Some(d) => {
+                println!("Hit right @ {}", d);
                 if d > max_dist {
                     max_dist = d;
                     max = Some(Point {
@@ -237,6 +237,11 @@ impl Ray {
             }
         }
         
+        println!("origin, ({},{})", self.origin.x, self.origin.y);
+        println!("direction, ({},{})", self.direction.x, self.direction.y);
+        //println!("output, ({},{})", max.unwrap().x, max.unwrap().y);
+        println!("distance: {}", max_dist);
+
         max
     }
 
@@ -309,6 +314,7 @@ mod test {
     use sampler::Sample;
     use prng::PRNG;
     use super::Ray;
+    use aabb_quadtree::geom::{Point,Rect};
 
     #[test]
     fn new_works() {
@@ -325,5 +331,69 @@ mod test {
         };
 
         Ray::new(&l, &mut rng);
+    }
+
+    #[test]
+    fn furthest_aabb_hits_horsiontal() {
+        let mut rng = PRNG::seed(0); 
+
+        let x_plus_light = Light{
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(0.0),
+            y: Sample::Constant(0.0),
+            polar_angle: Sample::Range(0.0, 0.0),
+            polar_distance: Sample::Constant(0.0),
+            // x = cos(0) = 1; y = sin(0) = 0
+            ray_angle: Sample::Range(0.0, 0.0),
+            wavelength: Sample::Blackbody(5800.0),
+        };
+
+        //Firing a ray in x+, 0 from origin
+        let ray = Ray::new(&x_plus_light, &mut rng);
+
+        // wall from 1,-10 to 11, +10 should be in the way
+        let p1 = Point{ x: 1.0, y: -10.0, };
+        let p2 = Point{ x: 11.0, y: 10.0, };
+        let aabb = Rect::from_points(&p1, &p2);
+
+        let result = ray.furthest_aabb(aabb);
+        
+        // check hit!
+        assert!(result.is_some());
+        let result = result.unwrap();
+        assert_eq!(result.x, 11.0);
+        assert_eq!(result.y,  0.0);
+    }
+
+    #[test]
+    fn furthest_aabb_hits_vertical() {
+        let mut rng = PRNG::seed(0); 
+
+        let x_plus_light = Light{
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(0.0),
+            y: Sample::Constant(0.0),
+            polar_angle: Sample::Constant(0.0),
+            polar_distance: Sample::Constant(0.0),
+            // x = cos(90) = 0; y = sin(90) = 1
+            ray_angle: Sample::Constant(90.0),
+            wavelength: Sample::Blackbody(5800.0),
+        };
+
+        //Firing a ray in 0, +y from origin
+        let ray = Ray::new(&x_plus_light, &mut rng);
+
+        // wall from 1,-10 to 11, +10 should be in the way
+        let p1 = Point{ x: -10.0, y: 1.0, };
+        let p2 = Point{ x: 10.0, y: 11.0, };
+        let aabb = Rect::from_points(&p1, &p2);
+
+        let result = ray.furthest_aabb(aabb);
+        
+        // check hit!
+        assert!(result.is_some());
+        let result = result.unwrap();
+        assert_eq!(result.x, 11.0);
+        assert_eq!(result.y,  0.0);
     }
 }
