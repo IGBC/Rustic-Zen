@@ -169,15 +169,22 @@ impl Ray {
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
         let slope = self.direction.y / self.direction.x;
-        let distance = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
+        let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
+        if alpha < 0.0 || alpha > 1.0 { return None; }
+        
+        let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
         if distance < 0.0 { return None; } 
-        return Some(distance/2.0);
+        return Some(distance);
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
         let mut max_dist: Option<f64> = None;
+        
+        let horizontal = Point{ x: aabb.top_right().x - aabb.top_left().x, y: 0.0 };
+        let vertical = Point{ x: 0.0, y: aabb.bottom_left().y - aabb.top_left().y };
+
         // top
-        match self.intersect_edge(aabb.top_left(), aabb.top_right()) {
+        match self.intersect_edge(aabb.top_left(), horizontal) {
             None => (),
             Some(d) => {
                 println!("Hit top @ {}", d);
@@ -195,7 +202,7 @@ impl Ray {
         }
 
         // bottom
-        match self.intersect_edge(aabb.bottom_left(), aabb.bottom_right()) {
+        match self.intersect_edge(aabb.bottom_left(), horizontal) {
             None => (),
             Some(d) => {
                 println!("Hit bottom @ {}", d);
@@ -213,7 +220,7 @@ impl Ray {
         }
 
         // left
-        match self.intersect_edge(aabb.top_left(), aabb.bottom_left()) {
+        match self.intersect_edge(aabb.top_left(), vertical) {
             None => (),
             Some(d) => {
                 println!("Hit left @ {}", d);
@@ -231,7 +238,7 @@ impl Ray {
         }
 
         // right
-        match self.intersect_edge(aabb.top_right(), aabb.bottom_right()) {
+        match self.intersect_edge(aabb.top_right(), vertical) {
             None => (),
             Some(d) => {
                 println!("Hit right @ {}", d);
@@ -411,7 +418,8 @@ mod test {
         // check hit!
         assert!(result.is_some());
         let result = result.unwrap();
-        assert_eq!(result.x, 11.0);
-        assert_eq!(result.y,  0.0);
+        println!("result: ({},{})", result.x, result.y);
+        assert_eq!(result.x,  0.0);
+        assert_eq!(result.y, 11.0);
     }
 }
