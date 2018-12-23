@@ -5,6 +5,7 @@ use std::f64::consts::PI;
 use object::Object;
 use aabb_quadtree::geom::{Point, Vector, Rect};
 use image::Image;
+use std::num;
 
 
 pub struct Ray {
@@ -168,6 +169,28 @@ impl Ray {
     }
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
+        let sdy = (sd.y - s1.y);
+        let sdx = (sd.x - s1.x);
+
+        let sm = sdy / sdx;
+        let sc = s1.y - sm * s1.x;
+        
+        let ody = (self.origin.y - self.direction.y);
+        let odx = (self.origin.x - self.direction.x);
+
+        let om = ody / odx;
+        let oc = self.origin.y - om * self.origin.x;
+
+        let x = (om - sm) / (sc - oc);
+        let y = om * x + oc;
+
+        let dx = (x - self.origin.x);
+        let dy = (y - self.origin.y);
+
+        let dist = ((dx * dx) + (dy * dy)).sqrt();
+
+        return Some(dist);
+
         let slope = self.direction.y / self.direction.x;
         let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
         if alpha < 0.0 || alpha > 1.0 { return None; }
