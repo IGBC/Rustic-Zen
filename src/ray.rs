@@ -169,6 +169,7 @@ impl Ray {
     }
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
+        /*
         let sdy = (sd.y - s1.y);
         let sdx = (sd.x - s1.x);
 
@@ -190,6 +191,7 @@ impl Ray {
         let dist = ((dx * dx) + (dy * dy)).sqrt();
 
         return Some(dist);
+        */
 
         let slope = self.direction.y / self.direction.x;
         let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
@@ -444,5 +446,38 @@ mod test {
         println!("result: ({},{})", result.x, result.y);
         assert_eq!(result.x,  0.0);
         assert_eq!(result.y, 11.0);
+    }
+
+    #[test]
+    fn furthest_aabb_hits_almost_vertical() {
+        let mut rng = PRNG::seed(0); 
+
+        let x_plus_light = Light{
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(0.0),
+            y: Sample::Constant(0.0),
+            polar_angle: Sample::Constant(0.0),
+            polar_distance: Sample::Constant(0.0),
+            // x = cos(45) = rt(2); y = sin(45) = rt(2)
+            ray_angle: Sample::Constant(45.0),
+            wavelength: Sample::Blackbody(5800.0),
+        };
+
+        //Firing a diagonal ray +x, +y from origin
+        let ray = Ray::new(&x_plus_light, &mut rng);
+
+        // wall from 1,-10 to 11, +10 should be in the way
+        let p1 = Point{ x: -10.0, y: 1.0, };
+        let p2 = Point{ x: 20.0, y: 11.0, };
+        let aabb = Rect::from_points(&p1, &p2);
+
+        let result = ray.furthest_aabb(aabb);
+        
+        // check hit!
+        assert!(result.is_some());
+        let result = result.unwrap();
+        println!("result: ({},{})", result.x, result.y);
+        assert_eq!(result.x.round(), 11.0);
+        assert_eq!(result.y.round(), 11.0);
     }
 }
