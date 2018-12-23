@@ -20,14 +20,13 @@ impl Image {
     }
 
     #[inline]
-    fn plot(&mut self, colour: (u16, u16, u16), x: usize, y: usize, intensity: f64) {
-        if x > self.width {
-            panic!("Bad x coord");
-        }
-
-        if y > self.height {
-            panic!("Bad y coord")
-        }
+    fn plot(&mut self, colour: (u16, u16, u16), x: i64, y: i64, intensity: f64) {
+        // Bounds checking;
+        if (x < 0) || (y < 0) { return; };
+        let x = x as usize;
+        let y = y as usize;
+        if x > self.width { return; };
+        if y > self.height { return; };
 
         let i = x + (y * self.width);
         let mut p = self.pixels[i];
@@ -40,6 +39,18 @@ impl Image {
     }
 
     pub fn draw_line(&mut self, colour: (u16, u16, u16), mut x0: f64, mut y0: f64, mut x1: f64, mut y1: f64) {
+        /*
+         * Modified version of Xiaolin Wu's antialiased line algorithm:
+         * http://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
+         *
+         * Brightness compensation:
+         *   The total brightness of the line should be proportional to its
+         *   length, but with Wu's algorithm it's proportional to dx.
+         *   We scale the brightness of each pixel to compensate.
+         */
+        
+        println!("draw_line ({},{}), ({},{})", x0, y0, x1, y1);
+        
         let dx: f64 = (x1 - x0).abs();
         let dy: f64 = (y1 - y0).abs();
 
@@ -72,8 +83,8 @@ impl Image {
         // Handle first endpoint
         let xend: f64 = x0.round();
         let yend: f64 = y0 + gradient * (xend - x0);
-        let xpxl1: usize = xend as usize;
-        let ypxl1: usize = yend.floor() as usize;
+        let xpxl1: i64 = xend as i64;
+        let ypxl1: i64 = yend.floor() as i64;
 
         let xgap: f64 = br * (1.0 - (x0 + 0.5) + xend); // 0 to br
         let ygap: f64 = yend - yend.floor(); // 0 to 1
@@ -86,8 +97,8 @@ impl Image {
         //Handle Second endpoint
         let xend: f64 = x1.round();
         let yend: f64 = y1 + gradient * (xend - x1);
-        let xpxl2: usize = xend as usize;
-        let ypxl2: usize = yend.floor() as usize;
+        let xpxl2: i64 = xend as i64;
+        let ypxl2: i64 = yend.floor() as i64;
 
         let xgap: f64 = br * (1.0 - (x1 + 0.5) + xend); // 0 to br
         let ygap: f64 = yend - yend.floor(); // 0 to 1
@@ -97,7 +108,8 @@ impl Image {
 
         // Loop Over line
         for x in xpxl1 + 1 .. xpxl2 - 1 {
-            let iy: usize = intery.floor() as usize;
+            let iy: i64 = intery.floor() as i64;
+            println!("iy = {}", iy);
             let fy: f64 = intery - intery.floor(); // 0 to 1
 
             self.plot(colour, x, iy, br * (1.0 - fy));

@@ -212,7 +212,6 @@ impl Ray {
         match self.intersect_edge(aabb.top_left(), horizontal) {
             None => (),
             Some(d) => {
-                println!("Hit top @ {}", d);
                 max_dist = match max_dist {
                     None => Some(d),
                     Some(md) => {
@@ -230,7 +229,6 @@ impl Ray {
         match self.intersect_edge(aabb.bottom_left(), horizontal) {
             None => (),
             Some(d) => {
-                println!("Hit bottom @ {}", d);
                 max_dist = match max_dist {
                     None => Some(d),
                     Some(md) => {
@@ -248,7 +246,6 @@ impl Ray {
         match self.intersect_edge(aabb.top_left(), vertical) {
             None => (),
             Some(d) => {
-                println!("Hit left @ {}", d);
                 max_dist = match max_dist {
                     None => Some(d),
                     Some(md) => {
@@ -266,7 +263,6 @@ impl Ray {
         match self.intersect_edge(aabb.top_right(), vertical) {
             None => (),
             Some(d) => {
-                println!("Hit right @ {}", d);
                 max_dist = match max_dist {
                     None => Some(d),
                     Some(md) => {
@@ -280,13 +276,10 @@ impl Ray {
             }
         }
         
-        println!("origin, ({},{})", self.origin.x, self.origin.y);
-        println!("direction, ({},{})", self.direction.x, self.direction.y);
 
         match max_dist {
             None => {return None;},
             Some(d) => {
-                println!("distance: {}", d);
                 return Some(Point {
                     x: self.origin.x + d * self.direction.x,
                     y: self.origin.y + d * self.direction.y,
