@@ -1,5 +1,6 @@
 use std::mem::swap;
 use prng::PRNG;
+use std::cmp;
 
 pub struct Image {
     width: usize,
@@ -27,7 +28,7 @@ impl Image {
         if x > self.width { return; };
         if y > self.height { return; };
 
-        let i = x + (y * self.width);
+        let i = (x + (y * self.width)).saturating_sub(1);
         let mut p = self.pixels[i];
         
         p.0 = p.0.saturating_add((colour.0 as f64 * intensity).round() as u64);
@@ -48,7 +49,7 @@ impl Image {
          *   We scale the brightness of each pixel to compensate.
          */
         
-        println!("draw_line ({},{}), ({},{})", x0, y0, x1, y1);
+        //println!("draw_line [{},{},{}] ({},{}), ({},{})", colour.0, colour.1, colour.2, x0, y0, x1, y1);
         
         let dx: f64 = (x1 - x0).abs();
         let dy: f64 = (y1 - y0).abs();
@@ -84,7 +85,15 @@ impl Image {
         let yend: f64 = y0 + gradient * (xend - x0);
         let xpxl1: i64 = xend as i64;
         let ypxl1: i64 = yend.floor() as i64;
-
+ /*
+     * Modified version of Xiaolin Wu's antialiased line algorithm:
+     * http://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
+     *
+     * Brightness compensation:
+     *   The total brightness of the line should be proportional to its
+     *   length, but with Wu's algorithm it's proportional to dx.
+     *   We scale the brightness of each pixel to compensate.
+     */
         let xgap: f64 = br * (1.0 - (x0 + 0.5) + xend); // 0 to br
         let ygap: f64 = yend - yend.floor(); // 0 to 1
 
@@ -168,11 +177,34 @@ impl Image {
         }
         return rgb;
     }
+
+    pub fn dumb_to_rgb8(&self) -> Vec<u8> {
+        let mut rgb: Vec<u8> = Vec::new();
+        for i in self.pixels.iter() {
+            let (r,g,b) = i;
+            // red
+            let r8 = cmp::min(255,r.clone());
+            rgb.push(r8 as u8);
+            let g8 = cmp::min(255,g.clone());
+            rgb.push(g8 as u8);
+            let b8 = cmp::min(255,b.clone());
+            rgb.push(b8 as u8);
+        }
+        return rgb;
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Image;
+    
+    // For reading and opening files
+    use std::path::Path;
+    use std::fs::File;
+    use std::io::BufWriter;
+    // To use encoder.set()
+    use png::HasParameters;
+
     #[test]
     fn traced_ray_is_not_black() {
         let mut i = Image::new(100, 100);
@@ -182,12 +214,23 @@ mod tests {
             count += p.0 as u128;
         }
         assert_ne!(count, 0);
+
+        let path = Path::new(r"image.ray_not_black.png");
+        let file = File::create(path).unwrap();
+        let ref mut w = BufWriter::new(file);
+
+        let data = i.dumb_to_rgb8();
+
+        let mut encoder = png::Encoder::new(w, 100, 100);
+        encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
+        let mut writer = encoder.write_header().unwrap();
+        writer.write_image_data(&data).unwrap(); // Save
     }
     
     #[test]
     fn empty_image_is_black() {
         let i = Image::new(1920, 1080);
-        let v = i.to_rgb8(1.0, 0.0);
+        let v = i.dumb_to_rgb8();
         for i in v.iter() {
             assert_eq!(i.clone(), 0u8);
         }

@@ -35,13 +35,14 @@ impl Ray {
             y: f64::sin(ray_angle),
         };
         // Set Colour
+        /*
         let mut visible = false;
         let mut tries = 1000;
         let mut colour = (0, 0, 0);
         while !visible {
             let wavelen = light.wavelength.val(rng);
             colour = wavelength_to_colour(wavelen);
-            if colour.0 == 0 &&  colour.1 == 0 && colour.2 == 0 {
+            if !(colour.0 == 0 &&  colour.1 == 0 && colour.2 == 0) {
                 tries -= 1;
                 if tries == 0 {
                     // Unlikely
@@ -52,6 +53,9 @@ impl Ray {
             }
 
         }
+        */
+        let wavelen = light.wavelength.val(rng);
+        let colour = wavelength_to_colour(wavelen);
         // wrap in an object
         Ray {
             origin,
