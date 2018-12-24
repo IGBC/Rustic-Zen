@@ -154,12 +154,6 @@ impl Image {
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
             let (r,g,b) = i;
-            // red
-            let u:f64 = Self::max(0.0,r.clone() as f64 * scale);
-            let dither = rng.uniform_f64();
-            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
-            let r8 = Self::max(0.0, Self::min(255.9,v));
-            rgb.push(r8 as u8);
 
             // green
             let u:f64 = Self::max(0.0,g.clone() as f64 * scale);
@@ -168,12 +162,19 @@ impl Image {
             let g8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(g8 as u8);
 
-            // red
+            // blue
             let u:f64 = Self::max(0.0,b.clone() as f64 * scale);
             let dither = rng.uniform_f64();
             let v:f64 = 255.0 * Self::max(u, exponent) + dither;
             let b8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(b8 as u8);
+
+            // red
+            let u:f64 = Self::max(0.0,r.clone() as f64 * scale);
+            let dither = rng.uniform_f64();
+            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
+            let r8 = Self::max(0.0, Self::min(255.9,v));
+            rgb.push(r8 as u8);
         }
         return rgb;
     }
@@ -182,13 +183,12 @@ impl Image {
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
             let (r,g,b) = i;
-            // red
-            let r8 = cmp::min(255,r.clone());
-            rgb.push(r8 as u8);
             let g8 = cmp::min(255,g.clone());
             rgb.push(g8 as u8);
             let b8 = cmp::min(255,b.clone());
             rgb.push(b8 as u8);
+            let r8 = cmp::min(255,r.clone());
+            rgb.push(r8 as u8);
         }
         return rgb;
     }
