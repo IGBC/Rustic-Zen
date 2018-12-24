@@ -20,22 +20,23 @@ impl Image {
     }
 
     #[inline]
-    fn plot(&mut self, colour: (u16, u16, u16), x: i64, y: i64, intensity: f64) {
+    fn plot(&mut self, colour: (u16, u16, u16), pixel: usize, intensity: f64) {
         // Bounds checking;
-        if (x < 0) || (y < 0) { return; };
+        /*if (x < 0) || (y < 0) { return; };
         let x = x as usize;
         let y = y as usize;
         if x > self.width { return; };
         if y > self.height { return; };
 
-        let i = (x + (y * self.width)).saturating_sub(1);
-        let mut p = self.pixels[i];
+        let i = (x + (y * self.width)).saturating_sub(1);*/
+        if pixel >= self.pixels.len() { return; };
+        let mut p = self.pixels[pixel];
         
         p.0 = p.0.saturating_add((colour.0 as f64 * intensity).round() as u64);
         p.1 = p.1.saturating_add((colour.1 as f64 * intensity).round() as u64);
         p.2 = p.2.saturating_add((colour.2 as f64 * intensity).round() as u64);
 
-        self.pixels[i] = p;
+        self.pixels[pixel] = p;
     }
 
     pub fn draw_line(&mut self, colour: (u16, u16, u16), mut x0: f64, mut y0: f64, mut x1: f64, mut y1: f64) {
@@ -51,6 +52,9 @@ impl Image {
         
         //println!("draw_line [{},{},{}] ({},{}), ({},{})", colour.0, colour.1, colour.2, x0, y0, x1, y1);
         
+        let mut hx: i64 = 1;
+        let mut hy: i64 = self.width as i64;
+
         let dx: f64 = (x1 - x0).abs();
         let dy: f64 = (y1 - y0).abs();
 
@@ -58,6 +62,7 @@ impl Image {
         if dy > dx {
             swap(&mut x0, &mut y0);
             swap(&mut x1, &mut y1);
+            swap(&mut hx, &mut hy);
         }
 
         // We expect x0->x1 to be in the +X direction
@@ -85,20 +90,12 @@ impl Image {
         let yend: f64 = y0 + gradient * (xend - x0);
         let xpxl1: i64 = xend as i64;
         let ypxl1: i64 = yend.floor() as i64;
- /*
-     * Modified version of Xiaolin Wu's antialiased line algorithm:
-     * http://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
-     *
-     * Brightness compensation:
-     *   The total brightness of the line should be proportional to its
-     *   length, but with Wu's algorithm it's proportional to dx.
-     *   We scale the brightness of each pixel to compensate.
-     */
+ 
         let xgap: f64 = br * (1.0 - (x0 + 0.5) + xend); // 0 to br
         let ygap: f64 = yend - yend.floor(); // 0 to 1
 
-        self.plot(colour, xpxl1, ypxl1, xgap * (1.0 - ygap));
-        self.plot(colour, xpxl1, ypxl1 + 1, xgap * ygap);
+        self.plot(colour, (xpxl1 * hx + ypxl1 * hy) as usize, xgap * (1.0 - ygap));
+        self.plot(colour, (xpxl1 * hx + (ypxl1 + 1) * hy) as usize, xgap * ygap);
 
         let mut intery: f64 = yend + gradient;
 
@@ -111,16 +108,16 @@ impl Image {
         let xgap: f64 = br * (1.0 - (x1 + 0.5) + xend); // 0 to br
         let ygap: f64 = yend - yend.floor(); // 0 to 1
 
-        self.plot(colour, xpxl2, ypxl2, xgap * (1.0 - ygap));
-        self.plot(colour, xpxl2, ypxl2 + 1, xgap * ygap);
+        self.plot(colour, (xpxl2 * hx + ypxl2 * hy) as usize, xgap * (1.0 - ygap));
+        self.plot(colour, (xpxl2 * hx + (ypxl2 + 1) * hy) as usize, xgap * ygap);
 
         // Loop Over line
         for x in xpxl1 + 1 .. xpxl2 - 1 {
             let iy: i64 = intery.floor() as i64;
             let fy: f64 = intery - intery.floor(); // 0 to 1
 
-            self.plot(colour, x, iy, br * (1.0 - fy));
-            self.plot(colour, x, iy + 1, br * fy);
+            self.plot(colour, (x * hx + iy * hy) as usize, br * (1.0 - fy));
+            self.plot(colour, (x * hx + (iy + 1) * hy) as usize, br * fy);
 
             intery += gradient;
         }
