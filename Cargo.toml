@@ -5,7 +5,7 @@ authors = ["SEGFAULT <fakespamtrap@gmail.com>"]
 
 [dependencies]
 aabb-quadtree = { path = "aabb_quadtree" }
-png = "0.13.2"
 
 [dev-dependencies]
 rand = "0.6.1"
+png = "0.13.2"

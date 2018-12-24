@@ -5,7 +5,6 @@ use std::f64::consts::PI;
 use object::Object;
 use aabb_quadtree::geom::{Point, Vector, Rect};
 use image::Image;
-use std::num;
 
 
 pub struct Ray {
@@ -338,7 +337,7 @@ impl Ray {
             None => (),
             Some(d) => {
                 if d < min_dist {
-                    min_dist = d;
+                    //min_dist = d;
                     min = Some(Point {
                         x: self.origin.x + d * self.direction.x,
                         y: self.origin.y + d * self.direction.y,

@@ -4,7 +4,7 @@ use prng::PRNG;
 pub struct Image {
     width: usize,
     height: usize,
-    pixels: Vec<(u64, u64, u64)>,
+    pub pixels: Vec<(u64, u64, u64)>,
 }
 
 impl Image {
@@ -108,7 +108,6 @@ impl Image {
         // Loop Over line
         for x in xpxl1 + 1 .. xpxl2 - 1 {
             let iy: i64 = intery.floor() as i64;
-            println!("iy = {}", iy);
             let fy: f64 = intery - intery.floor(); // 0 to 1
 
             self.plot(colour, x, iy, br * (1.0 - fy));
@@ -134,7 +133,14 @@ impl Image {
         }
     }
 
-    fn to_rgb8(&self, scale: f64, exponent: f64) -> Vec<u8> {
+    pub fn calculate_scale(&self, lightpower: f64, num_rays: usize, exposure: f64) -> f64 {
+        let area_scale = f64::sqrt((self.width as f64 * self.height as f64) / (1024.0 * 576.0));
+        let intensity_scale = lightpower / (255.0 * 8192.0);
+        let scale = f64::exp(1.0 + 10.0 * exposure) * area_scale * intensity_scale / num_rays as f64;
+        scale
+    }
+
+    pub fn to_rgb8(&self, scale: f64, exponent: f64) -> Vec<u8> {
         let mut rng = PRNG::seed(0);
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
@@ -160,7 +166,7 @@ impl Image {
             let b8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(b8 as u8);
         }
-        return vec![];
+        return rgb;
     }
 }
 
@@ -168,11 +174,29 @@ impl Image {
 mod tests {
     use super::Image;
     #[test]
+    fn traced_ray_is_not_black() {
+        let mut i = Image::new(100, 100);
+        i.draw_line((255, 255, 255), 10.0, 10.0, 90.0, 90.0);
+        let mut count: u128 = 0;
+        for p in i.pixels.iter() {
+            count += p.0 as u128;
+        }
+        assert_ne!(count, 0);
+    }
+    
+    #[test]
     fn empty_image_is_black() {
         let i = Image::new(1920, 1080);
-        let v = i.to_rgb8(1.0, 1.0);
+        let v = i.to_rgb8(1.0, 0.0);
         for i in v.iter() {
             assert_eq!(i.clone(), 0u8);
         }
+    }
+
+    #[test]
+    fn output_len() {
+        let i = Image::new(1920, 1080);
+        let v = i.to_rgb8(1.0, 1.0);
+        assert_eq!(v.len(), 1920*1080*3);
     }
 }

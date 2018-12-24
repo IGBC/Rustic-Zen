@@ -12,7 +12,7 @@ pub struct Renderer {
 
 
 impl Renderer {
-    fn new(scene: Scene) -> Self {
+    pub fn new(scene: Scene) -> Self {
         let mut total_light_power = 0.0;
         for i in scene.lights.iter() {
             total_light_power += i.power.bounds().1;
