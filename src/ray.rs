@@ -130,7 +130,10 @@ impl Ray {
 
         let end = match c_hit {
             None =>  // We hit nothing, we need to test on the viewport!
-                self.furthest_aabb(viewport).expect("Ray exists outside of Viewport"),
+                match self.furthest_aabb(viewport) {
+                    None => { return None; },
+                    Some(p) => p,
+                } //.expect(&format!("Ray ({},{}) ({},{}) exists outside of Viewport", self.origin.x, self.origin.y, self.direction.x, self.direction.y)),
             Some(p) => p, //this is the closest point we hit!
         };
 

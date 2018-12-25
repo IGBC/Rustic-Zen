@@ -9,15 +9,15 @@ extern crate rand;
 #[cfg(test)]
 extern crate png;
 
-mod sampler;
-mod spectrum;
-mod prng;
-mod image;
-mod scene;
-mod object;
+pub mod sampler;
+pub mod spectrum;
+pub mod prng;
+pub mod image;
+pub mod scene;
+pub mod object;
 //mod raytrace;
-mod niave_rt;
-mod ray;
+pub mod niave_rt;
+pub mod ray;
 
 #[cfg(test)]
 mod tests {
@@ -34,7 +34,8 @@ mod tests {
     use png::HasParameters;
 
     //Scene Parameters
-    use scene::{Light, Scene};
+    use object::Object;
+    use scene::{Material, Light, Scene};
     use sampler::Sample;
     use niave_rt::Renderer;
 
@@ -49,7 +50,7 @@ mod tests {
             polar_angle: Sample::Constant(0.0),
             polar_distance: Sample::Constant(0.0),
             ray_angle: Sample::Range(360.0, 0.0),
-            wavelength: Sample::Constant(0.0),
+            wavelength: Sample::Blackbody(6900.0),
         };
 
         let s = Scene {
@@ -57,7 +58,7 @@ mod tests {
             resolution_y: 1024,
             viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: 1000.0,y: 1000.0}),
             seed: 0,
-            rays: 1000,
+            rays: 10_000,
             timelimit: 0,
 
             exposure: 1.0,
@@ -78,12 +79,82 @@ mod tests {
         };
         assert_ne!(count, 0);
 
-        let scale = image.calculate_scale(1.0, 1000, 0.2);
+        let scale = image.calculate_scale(1.0, 10_000, 0.35);
 
         let data = image.to_rgb8(scale, 0.0);
         //let data = image.dumb_to_rgb8();
         
         let path = Path::new(r"lib.png_test.png");
+        let file = File::create(path).unwrap();
+        let ref mut w = BufWriter::new(file);
+
+        let mut encoder = png::Encoder::new(w, 1024, 1024);
+        encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
+        let mut writer = encoder.write_header().unwrap();
+        writer.write_image_data(&data).unwrap(); // Save
+    }
+
+    
+    #[test]
+    fn png_test_2() {
+        let width: f64 = 1024.0;
+        let height: f64 = 1024.0;
+        let rays = (width * height / 100.0).round() as usize;
+
+        let m = Material {
+            d: 0.3, r: 0.3, t: 0.3,
+        };
+
+        let o = Object::Line {
+            x0: Sample::Constant(0.0),
+            y0: Sample::Constant(height*0.75),
+            dx: Sample::Constant(width),
+            dy: Sample::Constant(0.0),
+            material: m.clone(),
+        };
+
+        let l = Light{
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(width/2.0),
+            y: Sample::Constant(height/2.0),
+            polar_angle: Sample::Constant(0.0),
+            polar_distance: Sample::Constant(0.0),
+            ray_angle: Sample::Range(360.0, 0.0),
+            wavelength: Sample::Blackbody(6900.0),
+        };
+
+        let s = Scene {
+            resolution_x: width as usize,
+            resolution_y: height as usize,
+            viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height}),
+            seed: 0,
+            rays: rays,
+            timelimit: 0,
+
+            exposure: 1.0,
+            gamma: 1.0,
+
+            lights: vec!(l),
+            objects: vec!(o),
+            materials: Vec::new(),
+        };
+
+        let r = Renderer::new(s);
+        
+        let image = r.render();
+
+        let mut count: u128 = 0;
+        for p in image.pixels.iter() {
+            count += p.0 as u128;
+        };
+        assert_ne!(count, 0);
+
+        let scale = image.calculate_scale(1.0, rays, 0.35);
+
+        let data = image.to_rgb8(scale, 0.0);
+        //let data = image.dumb_to_rgb8();
+        
+        let path = Path::new(r"lib.png_test_2.png");
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
