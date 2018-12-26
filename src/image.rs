@@ -1,21 +1,27 @@
 use std::mem::swap;
 use prng::PRNG;
 use std::cmp;
+use std::fs::File;
+use std::io::prelude::*;
 
 pub struct Image {
     width: usize,
     height: usize,
     pub pixels: Vec<(u64, u64, u64)>,
+    file: File,
 }
 
 impl Image {
     pub fn new(width: usize, height: usize) -> Self {
+        let mut file = File::create("rays.csv").unwrap();
+        file.write_all(b"r, g, b, x0, y0, x1, y1").unwrap();
         let len = width * height;
         let pixels: Vec<(u64, u64, u64)> = vec![(0, 0, 0); len];
         Image {
             width,
             height,
             pixels,
+            file,
         }
     }
 
@@ -51,7 +57,9 @@ impl Image {
          */
         
         //println!("draw_line [{},{},{}] ({},{}), ({},{})", colour.0, colour.1, colour.2, x0, y0, x1, y1);
-        
+        let s: String = format!("{},{},{},{},{},{},{}\n",colour.0, colour.1, colour.2, x0, y0, x1, y1);
+        self.file.write_all(s.as_bytes()).unwrap();
+
         let mut hx: i64 = 1;
         let mut hy: i64 = self.width as i64;
 
@@ -150,28 +158,26 @@ impl Image {
         let mut rng = PRNG::seed(0);
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
-            let (r,g,b) = i;
-
             // green
-            let u:f64 = Self::max(0.0,g.clone() as f64 * scale);
+            let u:f64 = Self::max(0.0,i.1.clone() as f64 * scale);
             let dither = rng.uniform_f64();
             let v:f64 = 255.0 * Self::max(u, exponent) + dither;
             let g8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(g8 as u8);
 
-            // blue
-            let u:f64 = Self::max(0.0,b.clone() as f64 * scale);
-            let dither = rng.uniform_f64();
-            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
-            let b8 = Self::max(0.0, Self::min(255.9,v));
-            rgb.push(b8 as u8);
-
             // red
-            let u:f64 = Self::max(0.0,r.clone() as f64 * scale);
+            let u:f64 = Self::max(0.0,i.0.clone() as f64 * scale);
             let dither = rng.uniform_f64();
             let v:f64 = 255.0 * Self::max(u, exponent) + dither;
             let r8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(r8 as u8);
+
+            // blue
+            let u:f64 = Self::max(0.0,i.2.clone() as f64 * scale);
+            let dither = rng.uniform_f64();
+            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
+            let b8 = Self::max(0.0, Self::min(255.9,v));
+            rgb.push(b8 as u8);
         }
         return rgb;
     }
@@ -179,13 +185,12 @@ impl Image {
     pub fn dumb_to_rgb8(&self) -> Vec<u8> {
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
-            let (r,g,b) = i;
-            let g8 = cmp::min(255,g.clone());
+            let g8 = cmp::min(255,i.1.clone());
             rgb.push(g8 as u8);
-            let b8 = cmp::min(255,b.clone());
-            rgb.push(b8 as u8);
-            let r8 = cmp::min(255,r.clone());
+            let r8 = cmp::min(255,i.0.clone());
             rgb.push(r8 as u8);
+            let b8 = cmp::min(255,i.2.clone());
+            rgb.push(b8 as u8);
         }
         return rgb;
     }
@@ -205,7 +210,9 @@ mod tests {
     #[test]
     fn traced_ray_is_not_black() {
         let mut i = Image::new(100, 100);
-        i.draw_line((255, 255, 255), 10.0, 10.0, 90.0, 90.0);
+        i.draw_line((255, 0, 0), 10.0, 10.0, 90.0, 90.0);
+        i.draw_line((0, 255, 0), 20.0, 10.0, 90.0, 80.0);
+        i.draw_line((0, 0, 255), 10.0, 20.0, 80.0, 90.0);
         let mut count: u128 = 0;
         for p in i.pixels.iter() {
             count += p.0 as u128;

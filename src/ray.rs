@@ -140,7 +140,7 @@ impl Ray {
         image.draw_line(self.colour, self.origin.x, self.origin.y, end.x, end.y);
 
         // if we have bounces left Return the result else None.
-        if self.bounces > 0 {
+        if self.bounces > 1 {
             c_res
         } else {
             None
@@ -159,6 +159,12 @@ impl Ray {
             None => {return None},
             Some((hit, normal)) => (hit, normal),
         };
+
+        let dist = self.origin.distance(&hit);
+        
+        if dist < 3.0 {
+            return None;
+        }
 
         let outcome = self.outcome(obj, &normal, rng);
         let direction = match outcome {
@@ -478,5 +484,38 @@ mod test {
         println!("result: ({},{})", result.x, result.y);
         assert_eq!(result.x.round(), 11.0);
         assert_eq!(result.y.round(), 11.0);
+    }
+
+    #[test]
+    fn furthest_aabb_special_case() {
+        let mut rng = PRNG::seed(0); 
+
+        let x_plus_light = Light{
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(100.0),
+            y: Sample::Constant(700.0),
+            polar_angle: Sample::Constant(0.0),
+            polar_distance: Sample::Constant(0.0),
+            // x = cos(45) = rt(2); y = sin(45) = rt(2)
+            ray_angle: Sample::Constant(-45.0),
+            wavelength: Sample::Blackbody(5800.0),
+        };
+
+        //Firing a diagonal ray +x, -y from origin
+        let ray = Ray::new(&x_plus_light, &mut rng);
+
+        // wall from 1,-10 to 11, +10 should be in the way
+        let p1 = Point{ x: 0.0, y: 0.0, };
+        let p2 = Point{ x: 200.0, y: 1000.0, };
+        let aabb = Rect::from_points(&p1, &p2);
+
+        let result = ray.furthest_aabb(aabb);
+        
+        // check hit!
+        assert!(result.is_some());
+        let result = result.unwrap();
+        println!("result: ({},{})", result.x, result.y);
+        assert_eq!(result.x.round(), 600.0);
+        assert_eq!(result.y.round(), 200.0);
     }
 }

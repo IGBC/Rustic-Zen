@@ -20,7 +20,7 @@ use aabb_quadtree::geom::{Point, Rect};
 fn main() {
     let width: f64 = 3440.0;
     let height: f64 = 1440.0;
-    let rays = 100_000; //(width * height).round() as usize;
+    let rays = (width * height).round() as usize;
 
     let m = Material {
         d: 0.3, r: 0.3, t: 0.3,
