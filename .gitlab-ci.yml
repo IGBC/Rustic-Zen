@@ -18,7 +18,17 @@ image: "rust:latest"
 #- apt-get install -yqq --no-install-recommends build-essential
 
 # Use cargo to test the project
-test:cargo:
+test:unit-tests:
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo test --all --verbose
+
+test:example-dawn:
+  script:
+  - rustc --version && cargo --version      # Print version info for debugging
+  - cargo run --example dawn
+  
+test:example-laser-rainbow:
+  script:
+  - rustc --version && cargo --version      # Print version info for debugging
+  - cargo test --example laser-rainbow
