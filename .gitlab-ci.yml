@@ -26,9 +26,9 @@ test:unit-tests:
 test:example-dawn:
   script:
   - rustc --version && cargo --version      # Print version info for debugging
-  - cargo run --example dawn
+  - cargo run --example dawn --release
   
 test:example-laser-rainbow:
   script:
   - rustc --version && cargo --version      # Print version info for debugging
-  - cargo test --example laser-rainbow
+  - cargo run --example laser-rainbow --release
