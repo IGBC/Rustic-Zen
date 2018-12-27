@@ -27,8 +27,13 @@ test:example-dawn:
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo run --example dawn --release
-  
+  artifacts:
+    paths:
+    - dawn.png
 test:example-laser-rainbow:
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo run --example laser-rainbow --release
+  artifacts:
+    paths:
+    - laser-rainbow.png
