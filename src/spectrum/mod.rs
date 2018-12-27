@@ -21,12 +21,13 @@ pub fn wavelength_to_colour(nm: f64) -> (u16, u16, u16) {
 
     let fp_index: f64 = nm - FIRST_WAVELENGTH;
     let index: usize = fp_index.floor() as usize;
-    let frac: f64 = fp_index - fp_index.floor();
+    let frac: f64 = fp_index.fract();
     let inv: f64 = 1.0 - frac;
 
     let c1: (i16, i16, i16) = WAVELENGTH_TO_RGB[index];
     let c2: (i16, i16, i16) = WAVELENGTH_TO_RGB[index + 1];
 
+    //           <------------LERP Algorithm------------>
     let r: u16 = (inv * c1.0 as f64 + frac * c2.0 as f64) as u16;
     let g: u16 = (inv * c1.1 as f64 + frac * c2.1 as f64) as u16;
     let b: u16 = (inv * c1.2 as f64 + frac * c2.2 as f64) as u16;

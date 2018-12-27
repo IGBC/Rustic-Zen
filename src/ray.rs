@@ -514,8 +514,8 @@ mod test {
         // check hit!
         assert!(result.is_some());
         let result = result.unwrap();
-        println!("result: ({},{})", result.x, result.y);
-        assert_eq!(result.x.round(), 600.0);
-        assert_eq!(result.y.round(), 200.0);
+        println!("result: {:?}", result);
+        assert_eq!(result.x.round(), 200.0);
+        assert_eq!(result.y.round(), 600.0);
     }
 }
