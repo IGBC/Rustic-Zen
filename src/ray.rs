@@ -299,68 +299,6 @@ impl Ray {
             }
         }
     }
-
-    pub fn closest_aabb(&self, aabb: Rect) -> Option<Point> {
-        let mut min_dist = std::f64::MAX;
-        let mut min: Option<Point> = None;
-        // top
-        match self.intersect_edge(aabb.top_left(), aabb.top_right()) {
-            None => (),
-            Some(d) => {
-                if d < min_dist {
-                    min_dist = d;
-                    min = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
-            }
-        }
-
-        // bottom
-        match self.intersect_edge(aabb.bottom_left(), aabb.bottom_right()) {
-            None => (),
-            Some(d) => {
-                if d < min_dist {
-                    min_dist = d;
-                    min = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
-            }
-        }
-
-        // left
-        match self.intersect_edge(aabb.top_left(), aabb.bottom_left()) {
-            None => (),
-            Some(d) => {
-                if d < min_dist {
-                    min_dist = d;
-                    min = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
-            }
-        }
-
-        // right
-        match self.intersect_edge(aabb.top_right(), aabb.bottom_right()) {
-            None => (),
-            Some(d) => {
-                if d < min_dist {
-                    //min_dist = d;
-                    min = Some(Point {
-                        x: self.origin.x + d * self.direction.x,
-                        y: self.origin.y + d * self.direction.y,
-                    })
-                }
-            }
-        }
-        
-        min
-    }
 }
 
 #[cfg(test)]

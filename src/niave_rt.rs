@@ -17,7 +17,7 @@ impl Renderer {
         for i in scene.lights.iter() {
             total_light_power += i.power.bounds().1;
         }
-        let seed = scene.seed;
+        let seed = 0;
 
         let r = Renderer {
             scene,
@@ -26,6 +26,11 @@ impl Renderer {
         };
 
         return r; 
+    }
+
+    pub fn with_seed(mut self, seed: u32) -> Self {
+        self.seed = seed;
+        self
     }
     
     fn choose_light(&self, rng: &mut PRNG) -> &Light {
@@ -49,10 +54,10 @@ impl Renderer {
         }
     }
 
-    pub fn render(self) -> Image {
-        let mut rng = PRNG::seed(self.scene.seed);
+    pub fn render(self, rays: usize) -> Image {
+        let mut rng = PRNG::seed(self.seed);
         let mut image = Image::new(self.scene.resolution_x, self.scene.resolution_y);
-        for _i in 0..self.scene.rays {
+        for _i in 0..rays {
             self.trace_ray(&mut image, &mut rng);
         }
 
@@ -97,20 +102,13 @@ mod tests {
             resolution_x: 1920,
             resolution_y: 1080,
             viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: 160.0,y: 90.0}),
-            seed: 0,
-            rays: 100,
-            timelimit: 0,
-
-            exposure: 1.0,
-            gamma: 1.0,
 
             lights: vec!(l),
             objects: vec!(obj),
-            materials: Vec::new(),
         };
 
         let r = Renderer::new(s);
-        r.render();
+        r.render(100);
     }
 }
 

@@ -26,15 +26,6 @@ pub struct Scene {
     pub resolution_y: usize,
     pub viewport: Rect,
 
-    pub seed: u32,
-
-    pub rays: usize,
-    pub timelimit: usize,
-
-    pub exposure: f64,
-    pub gamma: f64,
-
     pub lights: Vec<Light>,
     pub objects: Vec<Object>,
-    pub materials: Vec<Material>,
 }

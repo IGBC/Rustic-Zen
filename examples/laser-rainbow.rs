@@ -81,12 +81,6 @@ fn main() {
         resolution_x: width as usize,
         resolution_y: height as usize,
         viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width+1.0,y: height+1.0}),
-        seed: 0,
-        rays: rays,
-        timelimit: 0,
-
-        exposure: 1.0,
-        gamma: 1.0,
 
         lights: vec!(
             laser(30.0, 694.0),
@@ -114,12 +108,11 @@ fn main() {
             laser(52.0, 416.0),
         ),
         objects: vec!(/*top,*/ bottom, left, right, floor),
-        materials: Vec::new(),
     };
 
     println!("Tracing Rays!");
     let r = Renderer::new(s);
-    let image = r.render();
+    let image = r.render(rays);
 
     println!("Serializing!");
     let scale = image.calculate_scale(23.0, rays, 0.12);

@@ -1,7 +1,4 @@
-#![allow(dead_code)]
 //#![warn(missing_docs)]
-//#![feature(cmp_partial)]
-//#![warn(dead_code)]
 extern crate aabb_quadtree;
 
 #[cfg(test)]
@@ -10,14 +7,15 @@ extern crate rand;
 extern crate png;
 
 pub mod sampler;
-pub mod spectrum;
-pub mod prng;
 pub mod image;
 pub mod scene;
 pub mod object;
 //mod raytrace;
 pub mod niave_rt;
-pub mod ray;
+
+mod spectrum;
+mod prng;
+mod ray;
 
 #[cfg(test)]
 mod tests {
@@ -57,21 +55,14 @@ mod tests {
             resolution_x: 1024,
             resolution_y: 1024,
             viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: 1000.0,y: 1000.0}),
-            seed: 0,
-            rays: 10_000,
-            timelimit: 0,
-
-            exposure: 1.0,
-            gamma: 1.0,
 
             lights: vec!(l),
             objects: vec!(),
-            materials: Vec::new(),
         };
 
         let r = Renderer::new(s);
         
-        let image = r.render();
+        let image = r.render(10_000);
 
         let mut count: u64 = 0;
         for p in image.pixels.iter() {
@@ -127,21 +118,14 @@ mod tests {
             resolution_x: width as usize,
             resolution_y: height as usize,
             viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height}),
-            seed: 0,
-            rays: rays,
-            timelimit: 0,
-
-            exposure: 1.0,
-            gamma: 1.0,
 
             lights: vec!(l),
             objects: vec!(o),
-            materials: Vec::new(),
         };
 
         let r = Renderer::new(s);
         
-        let image = r.render();
+        let image = r.render(rays);
 
         let mut count: u128 = 0;
         for p in image.pixels.iter() {

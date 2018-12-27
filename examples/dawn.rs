@@ -48,21 +48,14 @@ fn main() {
         resolution_x: width as usize,
         resolution_y: height as usize,
         viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height}),
-        seed: 0,
-        rays: rays,
-        timelimit: 0,
-
-        exposure: 1.0,
-        gamma: 1.0,
 
         lights: vec!(l),
         objects: vec!(o),
-        materials: Vec::new(),
     };
 
     println!("Tracing Rays!");
     let r = Renderer::new(s);
-    let image = r.render();
+    let image = r.render(rays);
 
     println!("Serializing!");
     let scale = image.calculate_scale(1.0, rays, 0.35);
