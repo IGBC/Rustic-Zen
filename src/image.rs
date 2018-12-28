@@ -167,21 +167,21 @@ impl Image {
             // red
             let u:f64 = Self::max(0.0,i.0.clone() as f64 * scale);
             let dither = rng.uniform_f64();
-            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
+            let v:f64 = 255.0 * u.powf(exponent) + dither;
             let r8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(r8 as u8);
 
             // green
             let u:f64 = Self::max(0.0,i.1.clone() as f64 * scale);
             let dither = rng.uniform_f64();
-            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
+            let v:f64 = 255.0 * u.powf(exponent) + dither;
             let g8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(g8 as u8);
 
             // blue
             let u:f64 = Self::max(0.0,i.2.clone() as f64 * scale);
             let dither = rng.uniform_f64();
-            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
+            let v:f64 = 255.0 * u.powf(exponent) + dither;
             let b8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(b8 as u8);
         }

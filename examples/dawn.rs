@@ -41,7 +41,7 @@ fn main() {
         polar_angle: Sample::Constant(0.0),
         polar_distance: Sample::Constant(0.0),
         ray_angle: Sample::Range(360.0, 0.0),
-        wavelength: Sample::Blackbody(3800.0),
+        wavelength: Sample::Blackbody(4500.0),
     };
 
     let s = Scene {
@@ -59,7 +59,7 @@ fn main() {
 
     println!("Serializing!");
     let scale = image.calculate_scale(1.0, 0.7);
-    let data = image.to_rgb8(scale, 0.0);
+    let data = image.to_rgb8(scale, 1.2);
 
     println!("Saving!");
     let path = Path::new(r"dawn.png");

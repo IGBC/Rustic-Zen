@@ -72,7 +72,7 @@ mod tests {
 
         let scale = image.calculate_scale(1.0, 0.5);
 
-        let data = image.to_rgb8(scale, 0.0);
+        let data = image.to_rgb8(scale, 0.5);
         //let data = image.dumb_to_rgb8();
         
         let path = Path::new(r"lib.png_test.png");
@@ -135,7 +135,7 @@ mod tests {
 
         let scale = image.calculate_scale(1.0, 0.5);
 
-        let data = image.to_rgb8(scale, 0.0);
+        let data = image.to_rgb8(scale, 0.5);
         //let data = image.dumb_to_rgb8();
         
         let path = Path::new(r"lib.png_test_2.png");

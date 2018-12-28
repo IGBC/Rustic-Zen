@@ -357,6 +357,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn furthest_aabb_hits_vertical() {
         let mut rng = PRNG::seed(0); 
 
