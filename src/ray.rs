@@ -1,6 +1,5 @@
 use scene::Light;
 use prng::PRNG;
-use spectrum::wavelength_to_colour;
 use std::f64::consts::PI;
 use object::Object;
 use aabb_quadtree::geom::{Point, Vector, Rect};
@@ -10,7 +9,7 @@ use image::Image;
 pub struct Ray {
     origin: Point,
     direction: Vector,
-    colour: (u16, u16, u16),
+    wavelength: f64,
     bounces: u32,
 }
 
@@ -54,13 +53,12 @@ impl Ray {
 
         }
         */
-        let wavelen = light.wavelength.val(rng);
-        let colour = wavelength_to_colour(wavelen);
+        let wavelength = light.wavelength.val(rng);
         // wrap in an object
         Ray {
             origin,
             direction,
-            colour,
+            wavelength,
             bounces: 1000,
         }
     }
@@ -137,7 +135,7 @@ impl Ray {
             Some(p) => p, //this is the closest point we hit!
         };
 
-        image.draw_line(self.colour, self.origin.x, self.origin.y, end.x, end.y);
+        image.draw_line(self.wavelength, self.origin.x, self.origin.y, end.x, end.y);
 
         // if we have bounces left Return the result else None.
         if self.bounces > 1 {
@@ -175,7 +173,7 @@ impl Ray {
         Option::Some(Ray {
             origin: hit,
             direction,
-            colour: self.colour,
+            wavelength: self.wavelength,
             bounces: self.bounces - 1,
         })
     }

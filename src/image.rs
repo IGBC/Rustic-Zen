@@ -3,6 +3,7 @@ use prng::PRNG;
 use std::cmp;
 use std::fs::File;
 use std::io::prelude::*;
+use spectrum::wavelength_to_colour;
 
 pub struct Image {
     width: usize,
@@ -45,7 +46,7 @@ impl Image {
         self.pixels[pixel] = p;
     }
 
-    pub fn draw_line(&mut self, colour: (u16, u16, u16), mut x0: f64, mut y0: f64, mut x1: f64, mut y1: f64) {
+    pub fn draw_line(&mut self, wavelength: f64, mut x0: f64, mut y0: f64, mut x1: f64, mut y1: f64) {
         /*
          * Modified version of Xiaolin Wu's antialiased line algorithm:
          * http://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
@@ -56,8 +57,10 @@ impl Image {
          *   We scale the brightness of each pixel to compensate.
          */
         
+
+        let colour: (u16, u16, u16) = wavelength_to_colour(wavelength);
         //println!("draw_line [{},{},{}] ({},{}), ({},{})", colour.0, colour.1, colour.2, x0, y0, x1, y1);
-        let s: String = format!("{},{},{},{},{},{},{}\n",colour.0, colour.1, colour.2, x0, y0, x1, y1);
+        let s: String = format!("{},{},{},{},{},{},{}\n", colour.0, colour.1, colour.2, x0, y0, x1, y1);
         self.file.write_all(s.as_bytes()).unwrap();
 
         let mut hx: i64 = 1;
@@ -210,9 +213,9 @@ mod tests {
     #[test]
     fn traced_ray_is_not_black() {
         let mut i = Image::new(100, 100);
-        i.draw_line((255, 0, 0), 10.0, 10.0, 90.0, 90.0);
-        i.draw_line((0, 255, 0), 20.0, 10.0, 90.0, 80.0);
-        i.draw_line((0, 0, 255), 10.0, 20.0, 80.0, 90.0);
+        i.draw_line(620.0, 10.0, 10.0, 90.0, 90.0);
+        i.draw_line(520.0, 20.0, 10.0, 90.0, 80.0);
+        i.draw_line(470.0, 10.0, 20.0, 80.0, 90.0);
         let mut count: u128 = 0;
         for p in i.pixels.iter() {
             count += p.0 as u128;
@@ -223,7 +226,8 @@ mod tests {
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
-        let data = i.dumb_to_rgb8();
+        let scale = i.calculate_scale(1.0, 3, 0.07);
+        let data = i.to_rgb8(scale ,0.0);
 
         let mut encoder = png::Encoder::new(w, 100, 100);
         encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
