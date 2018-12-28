@@ -9,20 +9,22 @@ pub struct Image {
     width: usize,
     height: usize,
     pub pixels: Vec<(f64, f64, f64)>,
-    file: File,
+    //file: File,
+    rays: usize,
 }
 
 impl Image {
     pub fn new(width: usize, height: usize) -> Self {
-        let mut file = File::create("rays.csv").unwrap();
-        file.write_all(b"r, g, b, x0, y0, x1, y1").unwrap();
+        //let mut file = File::create("rays.csv").unwrap();
+        //file.write_all(b"r, g, b, x0, y0, x1, y1").unwrap();
         let len = width * height;
         let pixels: Vec<(f64, f64, f64)> = vec![(0.0, 0.0, 0.0); len];
         Image {
             width,
             height,
             pixels,
-            file,
+            //file,
+            rays: 0,
         }
     }
 
@@ -60,8 +62,8 @@ impl Image {
 
         let colour: (f64, f64, f64) = wavelength_to_colour(wavelength);
         //println!("draw_line [{},{},{}] ({},{}), ({},{})", colour.0, colour.1, colour.2, x0, y0, x1, y1);
-        let s: String = format!("{},{},{},{},{},{},{}\n", colour.0, colour.1, colour.2, x0, y0, x1, y1);
-        self.file.write_all(s.as_bytes()).unwrap();
+        //let s: String = format!("{},{},{},{},{},{},{}\n", colour.0, colour.1, colour.2, x0, y0, x1, y1);
+        //self.file.write_all(s.as_bytes()).unwrap();
 
         let mut hx: i64 = 1;
         let mut hy: i64 = self.width as i64;
@@ -132,6 +134,7 @@ impl Image {
 
             intery += gradient;
         }
+        self.rays += 1;
     }
 
     fn max(a: f64, b: f64) -> f64 {
@@ -150,10 +153,10 @@ impl Image {
         }
     }
 
-    pub fn calculate_scale(&self, lightpower: f64, num_rays: usize, exposure: f64) -> f64 {
+    pub fn calculate_scale(&self, lightpower: f64, exposure: f64) -> f64 {
         let area_scale = f64::sqrt((self.width as f64 * self.height as f64) / (1024.0 * 576.0));
         let intensity_scale = lightpower / (255.0 * 8192.0);
-        let scale = f64::exp(1.0 + 10.0 * exposure) * area_scale * intensity_scale / num_rays as f64;
+        let scale = f64::exp(1.0 + 10.0 * exposure) * area_scale * intensity_scale / self.rays as f64;
         scale
     }
 
@@ -161,19 +164,19 @@ impl Image {
         let mut rng = PRNG::seed(0);
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
-            // green
-            let u:f64 = Self::max(0.0,i.1.clone() as f64 * scale);
-            let dither = rng.uniform_f64();
-            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
-            let g8 = Self::max(0.0, Self::min(255.9,v));
-            rgb.push(g8 as u8);
-
             // red
             let u:f64 = Self::max(0.0,i.0.clone() as f64 * scale);
             let dither = rng.uniform_f64();
             let v:f64 = 255.0 * Self::max(u, exponent) + dither;
             let r8 = Self::max(0.0, Self::min(255.9,v));
             rgb.push(r8 as u8);
+
+            // green
+            let u:f64 = Self::max(0.0,i.1.clone() as f64 * scale);
+            let dither = rng.uniform_f64();
+            let v:f64 = 255.0 * Self::max(u, exponent) + dither;
+            let g8 = Self::max(0.0, Self::min(255.9,v));
+            rgb.push(g8 as u8);
 
             // blue
             let u:f64 = Self::max(0.0,i.2.clone() as f64 * scale);
@@ -188,10 +191,10 @@ impl Image {
     pub fn dumb_to_rgb8(&self) -> Vec<u8> {
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
-            let g8 = Self::min(255.0,i.1.clone());
-            rgb.push(g8 as u8);
             let r8 = Self::min(255.0,i.0.clone());
             rgb.push(r8 as u8);
+            let g8 = Self::min(255.0,i.1.clone());
+            rgb.push(g8 as u8);
             let b8 = Self::min(255.0,i.2.clone());
             rgb.push(b8 as u8);
         }
@@ -226,7 +229,7 @@ mod tests {
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
-        let scale = i.calculate_scale(1.0, 3, 0.12);
+        let scale = i.calculate_scale(1.0, 0.12);
         let data = i.to_rgb8(scale ,0.0);
 
         let mut encoder = png::Encoder::new(w, 100, 100);

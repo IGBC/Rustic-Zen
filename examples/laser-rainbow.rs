@@ -37,13 +37,13 @@ fn main() {
     let wall_m = Material  { d: 1.0, r: 0.0, t: 0.0, };
     let floor_m = Material { d: 0.1, r: 0.3, t: 0.5, };
 
-    /*let top = Object::Line {
+    let top = Object::Line {
         x0: Sample::Constant(0.0),
         y0: Sample::Constant(0.0),
         dx: Sample::Constant(width),
         dy: Sample::Constant(0.0),
         material: wall_m.clone(),
-    };*/
+    };
 
     let bottom = Object::Line {
         x0: Sample::Constant(height),
@@ -107,7 +107,7 @@ fn main() {
             laser(51.0, 428.0),
             laser(52.0, 416.0),
         ),
-        objects: vec!(/*top,*/ bottom, left, right, floor),
+        objects: vec!(top, bottom, left, right, floor),
     };
 
     println!("Tracing Rays!");
@@ -115,8 +115,8 @@ fn main() {
     let image = r.render(rays);
 
     println!("Serializing!");
-    let scale = image.calculate_scale(23.0, rays, 0.5);
-    let data = image.to_rgb8(scale, 0.0);
+    let scale = image.calculate_scale(23.0, 0.45);
+    let data = image.to_rgb8(scale, 0.0); //1.0/2.2
 
     println!("Saving!");
     let path = Path::new(r"laser-rainbow.png");

@@ -70,7 +70,7 @@ mod tests {
         };
         assert_ne!(count, 0.0);
 
-        let scale = image.calculate_scale(1.0, 10_000, 0.5);
+        let scale = image.calculate_scale(1.0, 0.5);
 
         let data = image.to_rgb8(scale, 0.0);
         //let data = image.dumb_to_rgb8();
@@ -133,7 +133,7 @@ mod tests {
         };
         assert_ne!(count, 0);
 
-        let scale = image.calculate_scale(1.0, rays, 0.5);
+        let scale = image.calculate_scale(1.0, 0.5);
 
         let data = image.to_rgb8(scale, 0.0);
         //let data = image.dumb_to_rgb8();
