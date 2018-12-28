@@ -32,7 +32,7 @@ fn laser(angle: f64, wavelength: f64) -> Light {
 fn main() {
     let width: f64 = 1920.0;
     let height: f64 = 1080.0;
-    let rays = 10_000; //(width * height).round() as usize;
+    let rays = 1_000_000; //(width * height).round() as usize;
 
     let wall_m = Material  { d: 1.0, r: 0.0, t: 0.0, };
     let floor_m = Material { d: 0.1, r: 0.3, t: 0.5, };
@@ -73,7 +73,7 @@ fn main() {
         x0: Sample::Constant(0.0),
         y0: Sample::Constant(height*0.72),
         dx: Sample::Constant(width),
-        dy: Sample::Constant(0.0),
+        dy: Sample::Range(70.0, -20.0),
         material: floor_m.clone(),
     };
 
@@ -115,7 +115,7 @@ fn main() {
     let image = r.render(rays);
 
     println!("Serializing!");
-    let scale = image.calculate_scale(23.0, rays, 0.12);
+    let scale = image.calculate_scale(23.0, rays, 0.5);
     let data = image.to_rgb8(scale, 0.0);
 
     println!("Saving!");

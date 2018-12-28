@@ -8,7 +8,7 @@ use spectrum::wavelength_to_colour;
 pub struct Image {
     width: usize,
     height: usize,
-    pub pixels: Vec<(u64, u64, u64)>,
+    pub pixels: Vec<(f64, f64, f64)>,
     file: File,
 }
 
@@ -17,7 +17,7 @@ impl Image {
         let mut file = File::create("rays.csv").unwrap();
         file.write_all(b"r, g, b, x0, y0, x1, y1").unwrap();
         let len = width * height;
-        let pixels: Vec<(u64, u64, u64)> = vec![(0, 0, 0); len];
+        let pixels: Vec<(f64, f64, f64)> = vec![(0.0, 0.0, 0.0); len];
         Image {
             width,
             height,
@@ -27,7 +27,7 @@ impl Image {
     }
 
     #[inline]
-    fn plot(&mut self, colour: (u16, u16, u16), pixel: usize, intensity: f64) {
+    fn plot(&mut self, colour: (f64, f64, f64), pixel: usize, intensity: f64) {
         // Bounds checking;
         /*if (x < 0) || (y < 0) { return; };
         let x = x as usize;
@@ -39,9 +39,9 @@ impl Image {
         if pixel >= self.pixels.len() { return; };
         let mut p = self.pixels[pixel];
         
-        p.0 = p.0.saturating_add((colour.0 as f64 * intensity).round() as u64);
-        p.1 = p.1.saturating_add((colour.1 as f64 * intensity).round() as u64);
-        p.2 = p.2.saturating_add((colour.2 as f64 * intensity).round() as u64);
+        p.0 = p.0 + (colour.0 * intensity);
+        p.1 = p.1 + (colour.1 * intensity);
+        p.2 = p.2 + (colour.2 * intensity);
 
         self.pixels[pixel] = p;
     }
@@ -58,7 +58,7 @@ impl Image {
          */
         
 
-        let colour: (u16, u16, u16) = wavelength_to_colour(wavelength);
+        let colour: (f64, f64, f64) = wavelength_to_colour(wavelength);
         //println!("draw_line [{},{},{}] ({},{}), ({},{})", colour.0, colour.1, colour.2, x0, y0, x1, y1);
         let s: String = format!("{},{},{},{},{},{},{}\n", colour.0, colour.1, colour.2, x0, y0, x1, y1);
         self.file.write_all(s.as_bytes()).unwrap();
@@ -188,11 +188,11 @@ impl Image {
     pub fn dumb_to_rgb8(&self) -> Vec<u8> {
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
-            let g8 = cmp::min(255,i.1.clone());
+            let g8 = Self::min(255.0,i.1.clone());
             rgb.push(g8 as u8);
-            let r8 = cmp::min(255,i.0.clone());
+            let r8 = Self::min(255.0,i.0.clone());
             rgb.push(r8 as u8);
-            let b8 = cmp::min(255,i.2.clone());
+            let b8 = Self::min(255.0,i.2.clone());
             rgb.push(b8 as u8);
         }
         return rgb;
@@ -213,20 +213,20 @@ mod tests {
     #[test]
     fn traced_ray_is_not_black() {
         let mut i = Image::new(100, 100);
-        i.draw_line(620.0, 10.0, 10.0, 90.0, 90.0);
-        i.draw_line(520.0, 20.0, 10.0, 90.0, 80.0);
-        i.draw_line(470.0, 10.0, 20.0, 80.0, 90.0);
-        let mut count: u128 = 0;
+        i.draw_line(620.0, 10.0, 10.0, 90.0, 90.0); //red 
+        i.draw_line(520.0, 20.0, 10.0, 90.0, 80.0); //green
+        i.draw_line(470.0, 10.0, 20.0, 80.0, 90.0); //blue
+        let mut count: f64 = 0.0;
         for p in i.pixels.iter() {
-            count += p.0 as u128;
+            count += p.0;
         }
-        assert_ne!(count, 0);
+        assert_ne!(count, 0.0);
 
         let path = Path::new(r"image.ray_not_black.png");
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
-        let scale = i.calculate_scale(1.0, 3, 0.07);
+        let scale = i.calculate_scale(1.0, 3, 0.12);
         let data = i.to_rgb8(scale ,0.0);
 
         let mut encoder = png::Encoder::new(w, 100, 100);

@@ -64,13 +64,13 @@ mod tests {
         
         let image = r.render(10_000);
 
-        let mut count: u64 = 0;
+        let mut count: f64 = 0.0;
         for p in image.pixels.iter() {
             count += p.0;
         };
-        assert_ne!(count, 0);
+        assert_ne!(count, 0.0);
 
-        let scale = image.calculate_scale(1.0, 10_000, 0.35);
+        let scale = image.calculate_scale(1.0, 10_000, 0.5);
 
         let data = image.to_rgb8(scale, 0.0);
         //let data = image.dumb_to_rgb8();
@@ -133,7 +133,7 @@ mod tests {
         };
         assert_ne!(count, 0);
 
-        let scale = image.calculate_scale(1.0, rays, 0.35);
+        let scale = image.calculate_scale(1.0, rays, 0.5);
 
         let data = image.to_rgb8(scale, 0.0);
         //let data = image.dumb_to_rgb8();

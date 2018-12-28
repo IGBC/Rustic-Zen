@@ -7,16 +7,16 @@ use self::cdf::{BLACKBODY_CDF_TEMP, BLACKBODY_CDF_DATA};
 use self::wavelength::{FIRST_WAVELENGTH, LAST_WAVELENGTH, WAVELENGTH_TO_RGB};
 
 
-pub fn wavelength_to_colour(nm: f64) -> (u16, u16, u16) {
+pub fn wavelength_to_colour(nm: f64) -> (f64, f64, f64) {
     // Special Case: monochromatic white.
     if nm == 0.0 {
         // We don't know why this is 8K yet.
-        return (8192, 8192, 8192);
+        return (8192.0, 8192.0, 8192.0);
     }
 
     // Case: Light outside of visible spectrum
     if nm < FIRST_WAVELENGTH || nm > LAST_WAVELENGTH {
-        return (0, 0, 0);
+        return (0.0, 0.0, 0.0);
     }
 
     let fp_index: f64 = nm - FIRST_WAVELENGTH;
@@ -28,9 +28,9 @@ pub fn wavelength_to_colour(nm: f64) -> (u16, u16, u16) {
     let c2: (i16, i16, i16) = WAVELENGTH_TO_RGB[index + 1];
 
     //           <------------LERP Algorithm------------>
-    let r: u16 = (inv * c1.0 as f64 + frac * c2.0 as f64) as u16;
-    let g: u16 = (inv * c1.1 as f64 + frac * c2.1 as f64) as u16;
-    let b: u16 = (inv * c1.2 as f64 + frac * c2.2 as f64) as u16;
+    let r: f64 = inv * c1.0 as f64 + frac * c2.0 as f64;
+    let g: f64 = inv * c1.1 as f64 + frac * c2.1 as f64;
+    let b: f64 = inv * c1.2 as f64 + frac * c2.2 as f64;
 
     return (r, g, b);
 }
@@ -46,4 +46,27 @@ pub fn blackbody_wavelength(temp: f64, noise: f64) -> f64 {
 
      // Scale to 'temperature' using Wein's displacement law
     return lerp * (BLACKBODY_CDF_TEMP / temp);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::wavelength_to_colour;
+
+    #[test]
+    fn match_colours() {
+        let (r,g,b) = wavelength_to_colour(635.0);
+        assert_eq!(r, 11654.0);
+        assert_eq!(g, -967.0);
+        assert_eq!(b, -115.0);
+
+        let (r,g,b) = wavelength_to_colour(530.0);
+        assert_eq!(r, -6634.0);
+        assert_eq!(g, 11947.0);
+        assert_eq!(b, -1000.0);
+
+        let (r,g,b) = wavelength_to_colour(458.0);
+        assert_eq!(r, 392.0);
+        assert_eq!(g, -981.0);
+        assert_eq!(b, 14817.0);
+    }
 }

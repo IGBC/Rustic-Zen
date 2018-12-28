@@ -20,7 +20,7 @@ use aabb_quadtree::geom::{Point, Rect};
 fn main() {
     let width: f64 = 3440.0;
     let height: f64 = 1440.0;
-    let rays = (width * height).round() as usize;
+    let rays = ((width * height).round() / 2.0) as usize;
 
     let m = Material {
         d: 0.3, r: 0.3, t: 0.3,
@@ -41,7 +41,7 @@ fn main() {
         polar_angle: Sample::Constant(0.0),
         polar_distance: Sample::Constant(0.0),
         ray_angle: Sample::Range(360.0, 0.0),
-        wavelength: Sample::Blackbody(6900.0),
+        wavelength: Sample::Blackbody(3800.0),
     };
 
     let s = Scene {
@@ -58,7 +58,7 @@ fn main() {
     let image = r.render(rays);
 
     println!("Serializing!");
-    let scale = image.calculate_scale(1.0, rays, 0.35);
+    let scale = image.calculate_scale(1.0, rays, 0.7);
     let data = image.to_rgb8(scale, 0.0);
 
     println!("Saving!");
