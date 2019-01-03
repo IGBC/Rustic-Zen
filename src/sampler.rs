@@ -1,15 +1,27 @@
+//! This module provides rustic-zen's sampler implementation, which
+//! is needed for instanciating lights and objects.
+
 use prng::PRNG;
 use spectrum::blackbody_wavelength;
 use std::f64;
 
 #[derive(Clone, Copy, Debug)]
-/// Samples stochastically sample a value, which may be:
+/// Samples a stochastically sampled value, which may be:
 ///  - a constant
 ///  - linear range between two values
 ///  - A Blackbody Curve of temperature K
 pub enum Sample {
+        /// A constant Value
         Constant(f64),
+        /// A Blackbody Curve of given temprature
+        /// 
+        /// Realistically only useful for light wavelengths.
         Blackbody(f64),
+        /// A value sampled linierly from the given range.
+        /// 
+        /// The larger value must be the first argument or it will panic,
+        /// rustic-zen is about going fast not holding your hand and these samplers
+        /// are in the critical path
         Range(f64,f64),
     }
 
@@ -23,12 +35,22 @@ impl Sample {
         }
     }
 
-    // Returns upper and lower bounds of this Sample
+    /// Returns upper and lower bounds of this Sample.
+    /// 
+    /// # Example
+    /// ```
+    /// use rustic_zen::sampler::Sample;
+    /// 
+    /// let f = Sample::Range(1.0, 0.0);
+    /// let (upper, lower) = f.bounds();
+    /// assert_eq!(lower, 0.0);
+    /// assert_eq!(upper, 1.0);
+    /// ```
     pub fn bounds(&self) -> (f64, f64) {
         match self {
             Sample::Constant(i) => (i.clone(), i.clone()),
             //Sample::Blackbody(k) => (k, k), //TODO Actually work out what these are.
-            Sample::Range(l,u) => (l.clone(), u.clone()),
+            Sample::Range(u,l) => (u.clone(), l.clone()),
             _ => (f64::MIN, f64::MAX),
         }
     }
