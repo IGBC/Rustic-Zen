@@ -1,5 +1,4 @@
 extern crate png;
-extern crate aabb_quadtree;
 extern crate rustic_zen;
 
 // For reading and opening files
@@ -10,12 +9,7 @@ use std::io::BufWriter;
 use png::HasParameters;
 
 //Scene Parameters
-use rustic_zen::object::Object;
-use rustic_zen::scene::{Material, Light, Scene};
-use rustic_zen::sampler::Sample;
-use rustic_zen::niave_rt::Renderer;
-
-use aabb_quadtree::geom::{Point, Rect};
+use rustic_zen::prelude::*;
 
 fn laser(angle: f64, wavelength: f64) -> Light {
     Light {
@@ -77,41 +71,38 @@ fn main() {
         material: floor_m.clone(),
     };
 
-    let s = Scene {
-        resolution_x: width as usize,
-        resolution_y: height as usize,
-        viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width+1.0,y: height+1.0}),
-
-        lights: vec!(
-            laser(30.0, 694.0),
-            laser(31.0, 676.0),
-            laser(32.0, 647.0),
-            laser(33.0, 635.0),
-            laser(34.0, 633.0),
-            laser(35.0, 628.0),
-            laser(36.0, 612.0),
-            laser(37.0, 594.0),
-            laser(38.0, 578.0),
-            laser(39.0, 568.0),
-            laser(40.0, 543.0),
-            laser(41.0, 532.0),
-            laser(42.0, 530.0),
-            laser(43.0, 514.0),
-            laser(44.0, 511.0),
-            laser(45.0, 501.0),
-            laser(46.0, 496.0),
-            laser(47.0, 488.0),
-            laser(48.0, 475.0),
-            laser(49.0, 458.0),
-            laser(50.0, 442.0),
-            laser(51.0, 428.0),
-            laser(52.0, 416.0),
-        ),
-        objects: vec!(top, bottom, left, right, floor),
-    };
+    let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width+1.0,y: height+1.0});
 
     println!("Tracing Rays!");
-    let r = Renderer::new(s);
+    let r = Renderer::new(width as usize, height as usize, viewport)
+        .with_light(laser(30.0, 694.0))
+        .with_light(laser(31.0, 676.0))
+        .with_light(laser(32.0, 647.0))
+        .with_light(laser(33.0, 635.0))
+        .with_light(laser(34.0, 633.0))
+        .with_light(laser(35.0, 628.0))
+        .with_light(laser(36.0, 612.0))
+        .with_light(laser(37.0, 594.0))
+        .with_light(laser(38.0, 578.0))
+        .with_light(laser(39.0, 568.0))
+        .with_light(laser(40.0, 543.0))
+        .with_light(laser(41.0, 532.0))
+        .with_light(laser(42.0, 530.0))
+        .with_light(laser(43.0, 514.0))
+        .with_light(laser(44.0, 511.0))
+        .with_light(laser(45.0, 501.0))
+        .with_light(laser(46.0, 496.0))
+        .with_light(laser(47.0, 488.0))
+        .with_light(laser(48.0, 475.0))
+        .with_light(laser(49.0, 458.0))
+        .with_light(laser(50.0, 442.0))
+        .with_light(laser(51.0, 428.0))
+        .with_light(laser(52.0, 416.0))
+        .with_object(floor)
+        .with_object(top)
+        .with_object(bottom)
+        .with_object(left)
+        .with_object(right);
     let image = r.render(rays);
 
     println!("Serializing!");
