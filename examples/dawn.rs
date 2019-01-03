@@ -1,5 +1,4 @@
 extern crate png;
-extern crate aabb_quadtree;
 extern crate rustic_zen;
 
 // For reading and opening files
@@ -9,13 +8,7 @@ use std::io::BufWriter;
 // To use encoder.set()
 use png::HasParameters;
 
-//Scene Parameters
-use rustic_zen::object::Object;
-use rustic_zen::scene::{Material, Light, Scene};
-use rustic_zen::sampler::Sample;
-use rustic_zen::niave_rt::Renderer;
-
-use aabb_quadtree::geom::{Point, Rect};
+use rustic_zen::prelude::*;
 
 fn main() {
     let width: f64 = 3440.0;
@@ -44,17 +37,10 @@ fn main() {
         wavelength: Sample::Blackbody(4500.0),
     };
 
-    let s = Scene {
-        resolution_x: width as usize,
-        resolution_y: height as usize,
-        viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height}),
-
-        lights: vec!(l),
-        objects: vec!(o),
-    };
+    let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
 
     println!("Tracing Rays!");
-    let r = Renderer::new(s);
+    let r = Renderer::new(width as usize, height as usize, viewport).with_object(o).with_light(l);
     let image = r.render(rays);
 
     println!("Serializing!");

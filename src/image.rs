@@ -1,29 +1,22 @@
 use std::mem::swap;
 use prng::PRNG;
-use std::cmp;
-use std::fs::File;
-use std::io::prelude::*;
 use spectrum::wavelength_to_colour;
 
 pub struct Image {
     width: usize,
     height: usize,
     pub pixels: Vec<(f64, f64, f64)>,
-    //file: File,
     rays: usize,
 }
 
 impl Image {
     pub fn new(width: usize, height: usize) -> Self {
-        //let mut file = File::create("rays.csv").unwrap();
-        //file.write_all(b"r, g, b, x0, y0, x1, y1").unwrap();
         let len = width * height;
         let pixels: Vec<(f64, f64, f64)> = vec![(0.0, 0.0, 0.0); len];
         Image {
             width,
             height,
             pixels,
-            //file,
             rays: 0,
         }
     }

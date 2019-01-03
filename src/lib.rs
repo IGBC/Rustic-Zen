@@ -1,4 +1,4 @@
-//#![warn(missing_docs)]
+#![warn(missing_docs)]
 extern crate aabb_quadtree;
 
 #[cfg(test)]
@@ -6,16 +6,24 @@ extern crate rand;
 #[cfg(test)]
 extern crate png;
 
-pub mod sampler;
-pub mod image;
-pub mod scene;
-pub mod object;
-//mod raytrace;
-pub mod niave_rt;
+mod sampler;
+mod scene;
+mod object;
+mod niave_rt;
+
+pub mod prelude {
+    pub use sampler::Sample;
+    pub use scene::{Light, Material};
+    pub use object::Object;
+    pub use niave_rt::Renderer;
+    pub use aabb_quadtree::geom::{Point, Rect};
+}
 
 mod spectrum;
 mod prng;
 mod ray;
+mod image;
+
 
 #[cfg(test)]
 mod tests {
@@ -33,7 +41,7 @@ mod tests {
 
     //Scene Parameters
     use object::Object;
-    use scene::{Material, Light, Scene};
+    use scene::{Material, Light};
     use sampler::Sample;
     use niave_rt::Renderer;
 
@@ -41,6 +49,9 @@ mod tests {
 
     #[test]
     fn png_test() {
+        let width = 1024.0;
+        let height = 1024.0;
+        
         let l = Light{
             power: Sample::Constant(1.0),
             x: Sample::Constant(512.0),
@@ -51,17 +62,8 @@ mod tests {
             wavelength: Sample::Blackbody(6900.0),
         };
 
-        let s = Scene {
-            resolution_x: 1024,
-            resolution_y: 1024,
-            viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: 1000.0,y: 1000.0}),
-
-            lights: vec!(l),
-            objects: vec!(),
-        };
-
-        let r = Renderer::new(s);
-        
+        let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
+        let r = Renderer::new(width as usize, height as usize, viewport).with_light(l);
         let image = r.render(10_000);
 
         let mut count: f64 = 0.0;
@@ -114,17 +116,9 @@ mod tests {
             wavelength: Sample::Blackbody(6900.0),
         };
 
-        let s = Scene {
-            resolution_x: width as usize,
-            resolution_y: height as usize,
-            viewport: Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height}),
+        let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
 
-            lights: vec!(l),
-            objects: vec!(o),
-        };
-
-        let r = Renderer::new(s);
-        
+        let r = Renderer::new(width as usize, height as usize, viewport).with_light(l).with_object(o);
         let image = r.render(rays);
 
         let mut count: u128 = 0;
