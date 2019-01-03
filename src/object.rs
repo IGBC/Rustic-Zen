@@ -4,22 +4,42 @@ use sampler::Sample;
 use prng::PRNG;
 use std::f64::consts::PI;
 
+/// Holds a definition of an object
+/// 
+/// Interally contains the associated logic.
 #[derive(Clone, Copy, Debug)]
 pub enum Object {
+    /// Straight line varient
     Line{
+        /// Material used
         material: Material,
+        /// Starting x Position
         x0: Sample,
+        /// Starting y Position
         y0: Sample,
+        /// Length in x Axis
         dx: Sample,
+        /// Length in y Axis
         dy: Sample,
     },
+    /// Curve Varient, completely untested and in places inplemented
+    /// as a straight line. 
+    /// 
+    /// **Do not Use!.**
     Curve{
+        /// Material used
         material: Material,
+        /// Starting x Position
         x0: Sample,
+        /// Starting y Position
         y0: Sample,
+        /// Starting angle
         a0: Sample,
+        /// Length in x Axis
         dx: Sample,
+        /// Length in y Axis
         dy: Sample,
+        /// Starting ending angle? maybe?
         da: Sample,
     },
 }
@@ -69,6 +89,9 @@ impl Object {
         }
     }
 
+    /**
+     * Returns a reference to the material used in this object
+     */
     pub fn get_material(&self) -> &Material {
         match self {
             Object::Curve{material, ..} => material,

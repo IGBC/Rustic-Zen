@@ -6,6 +6,7 @@ use sampler::Sample;
 use ray::Ray;
 use aabb_quadtree::geom::Rect;
 
+/// Holds scene Configuration and logic
 pub struct Renderer {
     lights: Vec<Light>,
     objects: Vec<Object>,
@@ -18,6 +19,7 @@ pub struct Renderer {
 
 
 impl Renderer {
+    /// Creates new Renderer ready for defining a scene.
     pub fn new(resolution_x: usize, resolution_y: usize, viewport: Rect) -> Self {
         Renderer {
             seed: 0,
@@ -30,17 +32,20 @@ impl Renderer {
         }
     }
 
+    /// Adds Light to the scene - Chainable varient
     pub fn with_light(mut self, light: Light) -> Self {
         self.total_light_power += light.power.bounds().1;
         self.lights.push(light);
         self
     }
 
+    /// Adds object to the scene - Chainable varient
     pub fn with_object(mut self, object: Object) -> Self {
         self.objects.push(object);
         self
     }
 
+    /// Sets the seed for the scene random number generator - Chainable varient
     pub fn with_seed(mut self, seed: u32) -> Self {
         self.seed = seed;
         self
@@ -67,6 +72,10 @@ impl Renderer {
         }
     }
 
+    /// Starts the ray tracing process. 
+    /// 
+    /// Naturally this call is very expensive. It also consumes the Renderer
+    /// and returns an Image class containing the rendered image data.
     pub fn render(self, rays: usize) -> Image {
         let mut rng = PRNG::seed(self.seed);
         let mut image = Image::new(self.resolution_x, self.resolution_y);
