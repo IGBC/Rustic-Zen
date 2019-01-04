@@ -1,4 +1,4 @@
-use aabb_quadtree::geom::{Point, Vector, Rect};
+use geom::{Point, Vector, Rect};
 use scene::Material;
 use sampler::Sample;
 use prng::PRNG;
@@ -175,7 +175,7 @@ mod tests {
     use super::Object;
     use scene::Material;
     use sampler::Sample;
-    use aabb_quadtree::geom::{ Point, Vector };
+    use geom::{ Point, Vector };
     use prng::PRNG;
 
     #[test]

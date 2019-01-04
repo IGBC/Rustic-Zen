@@ -2,7 +2,7 @@ use scene::Light;
 use prng::PRNG;
 use std::f64::consts::PI;
 use object::Object;
-use aabb_quadtree::geom::{Point, Vector, Rect};
+use geom::{Point, Vector, Rect};
 use image::Image;
 
 
@@ -34,25 +34,6 @@ impl Ray {
             y: f64::sin(ray_angle),
         };
         // Set Colour
-        /*
-        let mut visible = false;
-        let mut tries = 1000;
-        let mut colour = (0, 0, 0);
-        while !visible {
-            let wavelen = light.wavelength.val(rng);
-            colour = wavelength_to_colour(wavelen);
-            if !(colour.0 == 0 &&  colour.1 == 0 && colour.2 == 0) {
-                tries -= 1;
-                if tries == 0 {
-                    // Unlikely
-                    panic!("Colour Sampling ran out of tries");
-                } else {
-                    visible = true;
-                }
-            }
-
-        }
-        */
         let wavelength = light.wavelength.val(rng);
         // wrap in an object
         Ray {
@@ -82,7 +63,7 @@ impl Ray {
         }
 
         if f <= mat.d + mat.r {
-            let angle = self.reflect(normal);
+            let angle = self.direction.reflect(normal);
             return Some(angle);
         }
 
@@ -92,17 +73,6 @@ impl Ray {
         }
 
         None
-    }
-
-    /**
-     * Does *not* require 'normal' to already be normalized
-     */
-    fn reflect(&self, normal: &Vector) -> Vector {
-        let t: f64 = 2.0 * (normal.x * self.direction.x + normal.y * self.direction.y) /
-            (normal.x * normal.x + normal.y * normal.y);
-        let x = self.direction.x - t * normal.x;
-        let y = self.direction.y - t * normal.y;
-        Vector {x, y}
     }
 
     pub fn collision_list(&self, obj_list: &Vec<Object>, viewport: Rect, image: &mut Image, rng: &mut PRNG) -> Option<Self> {
@@ -179,30 +149,6 @@ impl Ray {
     }
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
-        /*
-        let sdy = (sd.y - s1.y);
-        let sdx = (sd.x - s1.x);
-
-        let sm = sdy / sdx;
-        let sc = s1.y - sm * s1.x;
-        
-        let ody = (self.origin.y - self.direction.y);
-        let odx = (self.origin.x - self.direction.x);
-
-        let om = ody / odx;
-        let oc = self.origin.y - om * self.origin.x;
-
-        let x = (om - sm) / (sc - oc);
-        let y = om * x + oc;
-
-        let dx = (x - self.origin.x);
-        let dy = (y - self.origin.y);
-
-        let dist = ((dx * dx) + (dy * dy)).sqrt();
-
-        return Some(dist);
-        */
-
         let slope = self.direction.y / self.direction.x;
         let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
         if alpha < 0.0 || alpha > 1.0 { return None; }
@@ -305,7 +251,7 @@ mod test {
     use sampler::Sample;
     use prng::PRNG;
     use super::Ray;
-    use aabb_quadtree::geom::{Point,Rect};
+    use geom::{Point,Rect};
 
     #[test]
     fn new_works() {

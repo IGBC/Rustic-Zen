@@ -4,7 +4,7 @@ use image::Image;
 use prng::PRNG;
 use sampler::Sample;
 use ray::Ray;
-use aabb_quadtree::geom::Rect;
+use geom::Rect;
 
 /// Holds scene Configuration and logic
 pub struct Renderer {
@@ -94,7 +94,7 @@ mod tests {
     use object::Object;
     use scene::{Material, Light};
     use sampler::Sample;
-    use aabb_quadtree::geom::{Point,Rect};
+    use geom::{Point,Rect};
     
     #[test]
     fn nrt_works(){

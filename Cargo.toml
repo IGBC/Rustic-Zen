@@ -3,9 +3,6 @@ name = "rustic-zen"
 version = "0.1.0"
 authors = ["SEGFAULT <fakespamtrap@gmail.com>"]
 
-[dependencies]
-aabb-quadtree = { path = "aabb_quadtree" }
-
 [dev-dependencies]
 rand = "0.6.1"
 png = "0.13.2"

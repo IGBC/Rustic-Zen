@@ -16,7 +16,9 @@
 //!     // Set up constants.
 //!     let width: f64 = 3440.0;
 //!     let height: f64 = 1440.0;
-//!     let rays = ((width * height).round() / 2.0) as usize;
+//!     let rays = 100_000;
+//!     // This would be better but these doctests have to run in reasonable time
+//!     // let rays = ((width * height).round() / 2.0) as usize;
 //! 
 //!     // Build a basic Material
 //!     let m = Material {
@@ -62,7 +64,6 @@
 //! ```
 //! 
 #![warn(missing_docs)]
-extern crate aabb_quadtree;
 
 #[cfg(test)]
 extern crate rand;
@@ -73,6 +74,7 @@ mod sampler;
 mod scene;
 mod object;
 mod niave_rt;
+mod geom;
 
 /// This prelude contains everything to quickstart using Rustic Zen. 
 pub mod prelude {
@@ -80,7 +82,7 @@ pub mod prelude {
     pub use scene::{Light, Material};
     pub use object::Object;
     pub use niave_rt::Renderer;
-    pub use aabb_quadtree::geom::{Point, Rect};
+    pub use geom::{Point, Rect};
 }
 
 mod spectrum;
@@ -109,7 +111,7 @@ mod tests {
     use sampler::Sample;
     use niave_rt::Renderer;
 
-    use aabb_quadtree::geom::{Point, Rect};
+    use geom::{Point, Rect};
 
     #[test]
     fn png_test() {

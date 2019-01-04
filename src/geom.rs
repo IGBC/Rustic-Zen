@@ -349,6 +349,17 @@ self.y * other.x }
 
     pub fn dot(&self, other: &Vector) -> f64 { self.x * other.x + self.y 
 * other.y }
+
+    /*
+     * Does *not* require 'normal' to already be normalized
+     */
+    pub fn reflect(&self, normal: &Vector) -> Vector {
+        let t: f64 = 2.0 * (normal.x * self.x + normal.y * self.y) /
+            (normal.x * normal.x + normal.y * normal.y);
+        let x = self.x - t * normal.x;
+        let y = self.y - t * normal.y;
+        Vector {x, y}
+    }
 }
 
 impl Point {
