@@ -150,6 +150,9 @@ impl Image {
         let area_scale = f64::sqrt((self.width as f64 * self.height as f64) / (1024.0 * 576.0));
         let intensity_scale = lightpower / (255.0 * 8192.0);
         let scale = f64::exp(1.0 + 10.0 * exposure) * area_scale * intensity_scale / self.rays as f64;
+        
+        println!("Image Statistics: raycount = {}, lightpower = {}, scale = {}", self.rays, lightpower, scale);
+        
         scale
     }
 
@@ -176,19 +179,6 @@ impl Image {
             let dither = rng.uniform_f64();
             let v:f64 = 255.0 * u.powf(exponent) + dither;
             let b8 = Self::max(0.0, Self::min(255.9,v));
-            rgb.push(b8 as u8);
-        }
-        return rgb;
-    }
-
-    pub fn dumb_to_rgb8(&self) -> Vec<u8> {
-        let mut rgb: Vec<u8> = Vec::new();
-        for i in self.pixels.iter() {
-            let r8 = Self::min(255.0,i.0.clone());
-            rgb.push(r8 as u8);
-            let g8 = Self::min(255.0,i.1.clone());
-            rgb.push(g8 as u8);
-            let b8 = Self::min(255.0,i.2.clone());
             rgb.push(b8 as u8);
         }
         return rgb;
@@ -222,8 +212,8 @@ mod tests {
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
-        let scale = i.calculate_scale(1.0, 0.12);
-        let data = i.to_rgb8(scale ,0.0);
+        let scale = i.calculate_scale(1.0, 0.3);
+        let data = i.to_rgb8(scale ,1.0);
 
         let mut encoder = png::Encoder::new(w, 100, 100);
         encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
@@ -234,7 +224,7 @@ mod tests {
     #[test]
     fn empty_image_is_black() {
         let i = Image::new(1920, 1080);
-        let v = i.dumb_to_rgb8();
+        let v = i.to_rgb8(1.0,1.0);
         for i in v.iter() {
             assert_eq!(i.clone(), 0u8);
         }

@@ -39,7 +39,7 @@ impl Sample {
     /// 
     /// # Example
     /// ```
-    /// use rustic_zen::sampler::Sample;
+    /// use rustic_zen::prelude::Sample;
     /// 
     /// let f = Sample::Range(1.0, 0.0);
     /// let (upper, lower) = f.bounds();

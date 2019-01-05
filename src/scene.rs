@@ -5,6 +5,8 @@ use sampler::Sample;
 /// # Examples
 /// Make a warm white small round light:
 /// ```
+/// use rustic_zen::prelude::{Light, Sample};
+/// 
 /// Light {
 ///     power: Sample::Constant(1.0),
 ///     x: Sample::Constant(512.0),

@@ -21,9 +21,7 @@
 //!     // let rays = ((width * height).round() / 2.0) as usize;
 //! 
 //!     // Build a basic Material
-//!     let m = Material {
-//!         d: 0.3, r: 0.3, t: 0.3,
-//!     };
+//!     let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 //! 
 //!     // Build a basic Object
 //!     let o = Object::Line {
@@ -31,7 +29,7 @@
 //!         y0: Sample::Constant(height*0.75),
 //!         dx: Sample::Constant(width),
 //!         dy: Sample::Constant(0.0),
-//!         material: m.clone(),
+//!         material: m,
 //!     };
 //! 
 //!     // Build a basic Light
