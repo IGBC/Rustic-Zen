@@ -23,7 +23,7 @@ impl PRNG {
             rng2: Wrapping(s),
             rng3: Wrapping(s),
         };
-        for _ in 0 .. 20 {
+        for _ in 0..20 {
             n.uniform_u32();
         }
         return n;
@@ -51,8 +51,8 @@ impl PRNG {
     /// Returns next value scaled between a and b
     #[inline]
     pub fn uniform_range(&mut self, a: f64, b: f64) -> f64 {
-        assert!(a>=b);
-        return a + (self.uniform_f64() * (b-a));
+        assert!(a >= b);
+        return a + (self.uniform_f64() * (b - a));
     }
 }
 
@@ -64,10 +64,10 @@ mod tests {
     #[test]
     fn uniform_f64() {
         let mut rng = PRNG::seed(0);
-        for _i in 0 .. 100000 {
+        for _i in 0..100000 {
             let f = rng.uniform_f64();
             assert!(f >= 0.0);
-            assert!(f <= 1.0);    
+            assert!(f <= 1.0);
         }
     }
 
@@ -75,7 +75,7 @@ mod tests {
     fn uniform_range() {
         //This test is O(N²) so you might want to ommit this test
         let mut stdrng = rand::thread_rng();
-        for _ in 0 .. 1000 {
+        for _ in 0..1000 {
             let mut f1: f64 = stdrng.gen();
             let mut f2: f64 = stdrng.gen();
             if f1 < f2 {
@@ -85,10 +85,10 @@ mod tests {
             }
             let mut rng = PRNG::seed(0);
 
-            for _ in 0 .. 1000 {
+            for _ in 0..1000 {
                 let f = rng.uniform_range(f1, f2);
                 assert!(f >= f2);
-                assert!(f <= f1);    
+                assert!(f <= f1);
             }
         }
     }

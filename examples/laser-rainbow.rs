@@ -2,9 +2,9 @@ extern crate png;
 extern crate rustic_zen;
 
 // For reading and opening files
-use std::path::Path;
 use std::fs::File;
 use std::io::BufWriter;
+use std::path::Path;
 // To use encoder.set()
 use png::HasParameters;
 
@@ -15,7 +15,7 @@ fn laser(angle: f64, wavelength: f64) -> Light {
     Light {
         power: Sample::Constant(1.0),
         x: Sample::Constant(180.0),
-        y: Sample::Constant(80.0), 
+        y: Sample::Constant(80.0),
         polar_angle: Sample::Range(360.0, 0.0),
         polar_distance: Sample::Range(2.0, 0.0),
         ray_angle: Sample::Constant(angle),
@@ -65,13 +65,19 @@ fn main() {
 
     let floor = Object::Line {
         x0: Sample::Constant(0.0),
-        y0: Sample::Constant(height*0.72),
+        y0: Sample::Constant(height * 0.72),
         dx: Sample::Constant(width),
         dy: Sample::Range(70.0, -20.0),
         material: Box::new(floor_m.clone()),
     };
 
-    let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width+1.0,y: height+1.0});
+    let viewport = Rect::from_points(
+        &Point { x: 0.0, y: 0.0 },
+        &Point {
+            x: width + 1.0,
+            y: height + 1.0,
+        },
+    );
 
     println!("Tracing Rays!");
     let r = Renderer::new(width as usize, height as usize, viewport)
@@ -107,7 +113,7 @@ fn main() {
 
     println!("Serializing!");
     let scale = image.calculate_scale(23.0, 0.2);
-    let data = image.to_rgb8(scale, 1.0/2.2); //1.0/2.2
+    let data = image.to_rgb8(scale, 1.0 / 2.2); //1.0/2.2
 
     println!("Saving!");
     let path = Path::new(r"laser-rainbow.png");

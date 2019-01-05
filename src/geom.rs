@@ -1,5 +1,4 @@
-#![allow(dead_code, missing_docs)]
-
+#![allow(missing_docs)]
 
 use std::ops::{Add, Neg, Sub};
 
@@ -23,7 +22,12 @@ pub struct Rect {
 
 impl Neg for Vector {
     type Output = Vector;
-    fn neg(self) -> Vector { Vector { x: -self.x, y: -self.y } }
+    fn neg(self) -> Vector {
+        Vector {
+            x: -self.x,
+            y: -self.y,
+        }
+    }
 }
 
 impl Sub<Vector> for Point {
@@ -66,7 +70,6 @@ impl Add<Point> for Vector {
     }
 }
 
-
 impl Sub<Point> for Point {
     type Output = Vector;
     fn sub(self, rhs: Point) -> Vector {
@@ -79,7 +82,10 @@ impl Sub<Point> for Point {
 
 impl Rect {
     pub fn centered_with_radius(p1: &Point, radius: f64) -> Rect {
-        let v = Vector { x: radius, y: radius };
+        let v = Vector {
+            x: radius,
+            y: radius,
+        };
         Rect::from_points(&(*p1 - v), &(*p1 + v))
     }
 
@@ -113,32 +119,49 @@ impl Rect {
         }
     }
 
-    pub fn expand(&self, left: f64, top: f64, right: f64, bottom: f64) 
--> Rect {
+    pub fn expand(&self, left: f64, top: f64, right: f64, bottom: f64) -> Rect {
         let top_left_vec = Vector { x: left, y: top };
-        let bottom_right_vec = Vector { x: right, y: bottom };
+        let bottom_right_vec = Vector {
+            x: right,
+            y: bottom,
+        };
         Rect {
             top_left: self.top_left - top_left_vec,
             bottom_right: self.bottom_right + bottom_right_vec,
         }
     }
 
-    pub fn width(&self) -> f64 { self.bottom_right.x - self.top_left.x }
+    pub fn width(&self) -> f64 {
+        self.bottom_right.x - self.top_left.x
+    }
 
-    pub fn height(&self) -> f64 { self.bottom_right.y - self.top_left.y 
-}
+    pub fn height(&self) -> f64 {
+        self.bottom_right.y - self.top_left.y
+    }
 
-    pub fn left(&self) -> f64 { self.top_left.x }
+    pub fn left(&self) -> f64 {
+        self.top_left.x
+    }
 
-    pub fn right(&self) -> f64 { self.bottom_right.x }
+    pub fn right(&self) -> f64 {
+        self.bottom_right.x
+    }
 
-    pub fn top(&self) -> f64 { self.top_left.y }
+    pub fn top(&self) -> f64 {
+        self.top_left.y
+    }
 
-    pub fn bottom(&self) -> f64 { self.bottom_right.y }
+    pub fn bottom(&self) -> f64 {
+        self.bottom_right.y
+    }
 
-    pub fn top_left(&self) -> Point { self.top_left }
+    pub fn top_left(&self) -> Point {
+        self.top_left
+    }
 
-    pub fn bottom_right(&self) -> Point { self.bottom_right }
+    pub fn bottom_right(&self) -> Point {
+        self.bottom_right
+    }
 
     pub fn bottom_left(&self) -> Point {
         Point {
@@ -182,7 +205,6 @@ impl Rect {
         }
     }
 
-
     pub fn expanded_by(&self, point: &Point) -> Rect {
         let mut r = self.clone();
         r.expand_to_include(point);
@@ -190,22 +212,36 @@ impl Rect {
     }
 
     pub fn is_null(&self) -> bool {
-        self.top_left.x.is_nan() || self.top_left.y.is_nan() || 
-self.bottom_right.x.is_nan() || self.bottom_right.y.is_nan()
+        self.top_left.x.is_nan()
+            || self.top_left.y.is_nan()
+            || self.bottom_right.x.is_nan()
+            || self.bottom_right.y.is_nan()
     }
 
     pub fn expand_to_include(&mut self, point: &Point) {
         fn min(a: f64, b: f64) -> f64 {
-            if a.is_nan() { return b; }
-            if b.is_nan() { return a; }
-            if a < b { return a; }
+            if a.is_nan() {
+                return b;
+            }
+            if b.is_nan() {
+                return a;
+            }
+            if a < b {
+                return a;
+            }
             return b;
         }
 
         fn max(a: f64, b: f64) -> f64 {
-            if a.is_nan() { return b; }
-            if b.is_nan() { return a; }
-            if a > b { return a; }
+            if a.is_nan() {
+                return b;
+            }
+            if b.is_nan() {
+                return a;
+            }
+            if a > b {
+                return a;
+            }
             return b;
         }
 
@@ -224,8 +260,10 @@ self.bottom_right.x.is_nan() || self.bottom_right.y.is_nan()
     }
 
     pub fn contains(&self, p: &Point) -> bool {
-        p.x >= self.top_left.x && p.x < self.bottom_right.x && p.y >= 
-self.top_left.y && p.y < self.bottom_right.y
+        p.x >= self.top_left.x
+            && p.x < self.bottom_right.x
+            && p.y >= self.top_left.y
+            && p.y < self.bottom_right.y
     }
 
     pub fn does_intersect(&self, other: &Rect) -> bool {
@@ -234,8 +272,10 @@ self.top_left.y && p.y < self.bottom_right.y
 
         // From stack overflow:
         // http://gamedev.stackexchange.com/a/913
-        !(r2.left() > r1.right() || r2.right() < r1.left() || r2.top() > 
-r1.bottom() || r2.bottom() < r1.top())
+        !(r2.left() > r1.right()
+            || r2.right() < r1.left()
+            || r2.top() > r1.bottom()
+            || r2.bottom() < r1.top())
     }
 
     pub fn intersect_with(&self, other: &Rect) -> Rect {
@@ -248,8 +288,13 @@ r1.bottom() || r2.bottom() < r1.top())
         let top = self.top().max(other.top());
         let bottom = self.bottom().min(other.bottom());
 
-        Rect::from_points(&Point { x: left, y: top }, &Point { x: right, 
-y: bottom })
+        Rect::from_points(
+            &Point { x: left, y: top },
+            &Point {
+                x: right,
+                y: bottom,
+            },
+        )
     }
 
     pub fn midpoint(&self) -> Point {
@@ -265,11 +310,13 @@ y: bottom })
             x: self.width() / 2.0,
             y: self.height(),
         };
-        let half_offset = Vector { x: self.width() / 2.0, y: 0.0 };
+        let half_offset = Vector {
+            x: self.width() / 2.0,
+            y: 0.0,
+        };
         (
             Rect::from_point_and_size(&self.top_left, &half_size),
-            Rect::from_point_and_size(&(self.top_left + half_offset), 
-&half_size),
+            Rect::from_point_and_size(&(self.top_left + half_offset), &half_size),
         )
     }
 
@@ -278,11 +325,13 @@ y: bottom })
             x: self.width(),
             y: self.height() / 2.0,
         };
-        let half_offset = Vector { x: 0.0, y: self.height() / 2.0 };
+        let half_offset = Vector {
+            x: 0.0,
+            y: self.height() / 2.0,
+        };
         (
             Rect::from_point_and_size(&self.top_left, &half_size),
-            Rect::from_point_and_size(&(self.top_left + half_offset), 
-&half_size),
+            Rect::from_point_and_size(&(self.top_left + half_offset), &half_size),
         )
     }
 
@@ -320,18 +369,22 @@ y: bottom })
     }
 
     pub fn close_to(&self, other: &Rect, epsilon: f64) -> bool {
-        self.top_left.close_to(&other.top_left, epsilon) && 
-self.bottom_right.close_to(&other.bottom_right, epsilon)
+        self.top_left.close_to(&other.top_left, epsilon)
+            && self.bottom_right.close_to(&other.bottom_right, epsilon)
     }
 }
 
 impl Vector {
-    pub fn magnitude(&self) -> f64 { (self.x * self.x + self.y * 
-self.y).sqrt() }
+    pub fn magnitude(&self) -> f64 {
+        (self.x * self.x + self.y * self.y).sqrt()
+    }
 
     pub fn normalized(&self) -> Vector {
         let m = self.magnitude();
-        Vector { x: self.x / m, y: self.y / m }
+        Vector {
+            x: self.x / m,
+            y: self.y / m,
+        }
     }
 
     pub fn mul_e(&self, other: &Vector) -> Vector {
@@ -341,33 +394,41 @@ self.y).sqrt() }
         }
     }
 
-    pub fn scale_e(&self, sx: f64, sy: f64) -> Vector { Vector { x: 
-self.x * sx, y: self.y * sy } }
+    pub fn scale_e(&self, sx: f64, sy: f64) -> Vector {
+        Vector {
+            x: self.x * sx,
+            y: self.y * sy,
+        }
+    }
 
-    pub fn cross(&self, other: &Vector) -> f64 { self.x * other.y - 
-self.y * other.x }
+    pub fn cross(&self, other: &Vector) -> f64 {
+        self.x * other.y - self.y * other.x
+    }
 
-    pub fn dot(&self, other: &Vector) -> f64 { self.x * other.x + self.y 
-* other.y }
+    pub fn dot(&self, other: &Vector) -> f64 {
+        self.x * other.x + self.y * other.y
+    }
 
     /*
      * Does *not* require 'normal' to already be normalized
      */
     pub fn reflect(&self, normal: &Vector) -> Vector {
-        let t: f64 = 2.0 * (normal.x * self.x + normal.y * self.y) /
-            (normal.x * normal.x + normal.y * normal.y);
+        let t: f64 = 2.0 * (normal.x * self.x + normal.y * self.y)
+            / (normal.x * normal.x + normal.y * normal.y);
         let x = self.x - t * normal.x;
         let y = self.y - t * normal.y;
-        Vector {x, y}
+        Vector { x, y }
     }
 }
 
 impl Point {
-    pub fn close_to(&self, other: &Point, epsilon: f64) -> bool { 
-self.distance_2(other) < epsilon * epsilon }
+    pub fn close_to(&self, other: &Point, epsilon: f64) -> bool {
+        self.distance_2(other) < epsilon * epsilon
+    }
 
-    pub fn distance(&self, other: &Point) -> f64 { 
-self.distance_2(other).sqrt() }
+    pub fn distance(&self, other: &Point) -> f64 {
+        self.distance_2(other).sqrt()
+    }
 
     pub fn distance_2(&self, other: &Point) -> f64 {
         let dx = self.x - other.x;

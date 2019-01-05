@@ -1,12 +1,12 @@
 use sampler::Sample;
 
 /// Data only struct which defines a Light Source
-/// 
+///
 /// # Examples
 /// Make a warm white small round light:
 /// ```
 /// use rustic_zen::prelude::{Light, Sample};
-/// 
+///
 /// Light {
 ///     power: Sample::Constant(1.0),
 ///     x: Sample::Constant(512.0),
@@ -27,7 +27,7 @@ pub struct Light {
     pub y: Sample,
     /// distance from x,y that photon will spawn
     pub polar_distance: Sample,
-    /// angle that polar_distance will be at 
+    /// angle that polar_distance will be at
     pub polar_angle: Sample,
     /// Angle which spawned ray will be at
     pub ray_angle: Sample,

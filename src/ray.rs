@@ -1,10 +1,9 @@
-use scene::Light;
-use prng::PRNG;
-use std::f64::consts::PI;
-use object::Object;
-use geom::{Point, Vector, Rect};
+use geom::{Point, Rect, Vector};
 use image::Image;
-
+use object::Object;
+use prng::PRNG;
+use scene::Light;
+use std::f64::consts::PI;
 
 pub struct Ray {
     origin: Point,
@@ -14,15 +13,14 @@ pub struct Ray {
 }
 
 impl Ray {
-
     /**
      * Creates new ray from light source, sampling the light apropriately.
      */
-    pub fn new(light: &Light, rng: &mut PRNG)->Self {
+    pub fn new(light: &Light, rng: &mut PRNG) -> Self {
         let cart_x = light.x.val(rng);
         let cart_y = light.y.val(rng);
         let polar_angle = light.polar_angle.val(rng);
-        let polar_dist  = light.polar_distance.val(rng);
+        let polar_dist = light.polar_distance.val(rng);
         let origin = Point {
             x: cart_x + f64::cos(polar_angle) * polar_dist,
             y: cart_y + f64::sin(polar_angle) * polar_dist,
@@ -48,7 +46,13 @@ impl Ray {
         return &self.origin;
     }
 
-    pub fn collision_list(&self, obj_list: &Vec<Object>, viewport: Rect, image: &mut Image, rng: &mut PRNG) -> Option<Self> {
+    pub fn collision_list(
+        &self,
+        obj_list: &Vec<Object>,
+        viewport: Rect,
+        image: &mut Image,
+        rng: &mut PRNG,
+    ) -> Option<Self> {
         // get closest Collision
         // Mercifully O(N)
         let mut c_distance = std::f64::MAX;
@@ -57,7 +61,7 @@ impl Ray {
         for i in obj_list.iter() {
             let result = self.bounce(i, rng);
             match result {
-                None => {},
+                None => {}
                 Some(i) => {
                     let dist = self.origin.distance(i.get_origin());
                     if dist < c_distance {
@@ -88,7 +92,6 @@ impl Ray {
         }
     }
 
-
     /**
      * Returns the resulting ray from colliding with object,
      * returns none if it does not actually hit the object.
@@ -96,13 +99,13 @@ impl Ray {
      */
     pub fn bounce(&self, obj: &Object, rng: &mut PRNG) -> Option<Self> {
         // Todo get actual ray start. And do an actual collision test
-        let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, rng){
-            None => {return None},
+        let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, rng) {
+            None => return None,
             Some((hit, normal, alpha)) => (hit, normal, alpha),
         };
 
         let dist = self.origin.distance(&hit);
-        
+
         if dist < 3.0 {
             return None;
         }
@@ -111,7 +114,9 @@ impl Ray {
         let outcome = mat.outcome(&self.direction, &normal, self.wavelength, alpha, rng);
         let direction = match outcome {
             Some(o) => o,
-            None => {return None;}, 
+            None => {
+                return None;
+            }
         };
 
         Option::Some(Ray {
@@ -124,19 +129,30 @@ impl Ray {
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
         let slope = self.direction.y / self.direction.x;
-        let alpha = ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 || alpha > 1.0 { return None; }
-        
+        let alpha =
+            ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
+        if alpha < 0.0 || alpha > 1.0 {
+            return None;
+        }
+
         let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
-        if distance < 0.0 { return None; } 
+        if distance < 0.0 {
+            return None;
+        }
         return Some(distance);
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
         let mut max_dist: Option<f64> = None;
-        
-        let horizontal = Point{ x: aabb.top_right().x - aabb.top_left().x, y: 0.0 };
-        let vertical = Point{ x: 0.0, y: aabb.bottom_left().y - aabb.top_left().y };
+
+        let horizontal = Point {
+            x: aabb.top_right().x - aabb.top_left().x,
+            y: 0.0,
+        };
+        let vertical = Point {
+            x: 0.0,
+            y: aabb.bottom_left().y - aabb.top_left().y,
+        };
 
         // top
         match self.intersect_edge(aabb.top_left(), horizontal) {
@@ -151,7 +167,7 @@ impl Ray {
                             max_dist
                         }
                     }
-                };  
+                };
             }
         }
 
@@ -168,7 +184,7 @@ impl Ray {
                             max_dist
                         }
                     }
-                };  
+                };
             }
         }
 
@@ -185,7 +201,7 @@ impl Ray {
                             max_dist
                         }
                     }
-                };  
+                };
             }
         }
 
@@ -202,13 +218,14 @@ impl Ray {
                             max_dist
                         }
                     }
-                };  
+                };
             }
         }
-        
 
         match max_dist {
-            None => {return None;},
+            None => {
+                return None;
+            }
             Some(d) => {
                 return Some(Point {
                     x: self.origin.x + d * self.direction.x,
@@ -221,17 +238,17 @@ impl Ray {
 
 #[cfg(test)]
 mod test {
-    use scene::Light;
-    use sampler::Sample;
-    use prng::PRNG;
     use super::Ray;
-    use geom::{Point,Rect};
+    use geom::{Point, Rect};
+    use prng::PRNG;
+    use sampler::Sample;
+    use scene::Light;
 
     #[test]
     fn new_works() {
-        let mut rng = PRNG::seed(0); 
+        let mut rng = PRNG::seed(0);
 
-        let l = Light{
+        let l = Light {
             power: Sample::Constant(1.0),
             x: Sample::Constant(100.0),
             y: Sample::Constant(100.0),
@@ -246,9 +263,9 @@ mod test {
 
     #[test]
     fn furthest_aabb_hits_horziontal() {
-        let mut rng = PRNG::seed(0); 
+        let mut rng = PRNG::seed(0);
 
-        let x_plus_light = Light{
+        let x_plus_light = Light {
             power: Sample::Constant(1.0),
             x: Sample::Constant(0.0),
             y: Sample::Constant(0.0),
@@ -263,25 +280,25 @@ mod test {
         let ray = Ray::new(&x_plus_light, &mut rng);
 
         // wall from 1,-10 to 11, +10 should be in the way
-        let p1 = Point{ x: 1.0, y: -10.0, };
-        let p2 = Point{ x: 11.0, y: 10.0, };
+        let p1 = Point { x: 1.0, y: -10.0 };
+        let p2 = Point { x: 11.0, y: 10.0 };
         let aabb = Rect::from_points(&p1, &p2);
 
         let result = ray.furthest_aabb(aabb);
-        
+
         // check hit!
         assert!(result.is_some());
         let result = result.unwrap();
         assert_eq!(result.x, 11.0);
-        assert_eq!(result.y,  0.0);
+        assert_eq!(result.y, 0.0);
     }
 
     #[test]
     #[ignore]
     fn furthest_aabb_hits_vertical() {
-        let mut rng = PRNG::seed(0); 
+        let mut rng = PRNG::seed(0);
 
-        let x_plus_light = Light{
+        let x_plus_light = Light {
             power: Sample::Constant(1.0),
             x: Sample::Constant(0.0),
             y: Sample::Constant(0.0),
@@ -296,25 +313,25 @@ mod test {
         let ray = Ray::new(&x_plus_light, &mut rng);
 
         // wall from 1,-10 to 11, +10 should be in the way
-        let p1 = Point{ x: -10.0, y: 1.0, };
-        let p2 = Point{ x: 10.0, y: 11.0, };
+        let p1 = Point { x: -10.0, y: 1.0 };
+        let p2 = Point { x: 10.0, y: 11.0 };
         let aabb = Rect::from_points(&p1, &p2);
 
         let result = ray.furthest_aabb(aabb);
-        
+
         // check hit!
         assert!(result.is_some());
         let result = result.unwrap();
         println!("result: ({},{})", result.x, result.y);
-        assert_eq!(result.x,  0.0);
+        assert_eq!(result.x, 0.0);
         assert_eq!(result.y, 11.0);
     }
 
     #[test]
     fn furthest_aabb_hits_almost_vertical() {
-        let mut rng = PRNG::seed(0); 
+        let mut rng = PRNG::seed(0);
 
-        let x_plus_light = Light{
+        let x_plus_light = Light {
             power: Sample::Constant(1.0),
             x: Sample::Constant(0.0),
             y: Sample::Constant(0.0),
@@ -329,12 +346,12 @@ mod test {
         let ray = Ray::new(&x_plus_light, &mut rng);
 
         // wall from 1,-10 to 11, +10 should be in the way
-        let p1 = Point{ x: -10.0, y: 1.0, };
-        let p2 = Point{ x: 20.0, y: 11.0, };
+        let p1 = Point { x: -10.0, y: 1.0 };
+        let p2 = Point { x: 20.0, y: 11.0 };
         let aabb = Rect::from_points(&p1, &p2);
 
         let result = ray.furthest_aabb(aabb);
-        
+
         // check hit!
         assert!(result.is_some());
         let result = result.unwrap();
@@ -345,9 +362,9 @@ mod test {
 
     #[test]
     fn furthest_aabb_special_case() {
-        let mut rng = PRNG::seed(0); 
+        let mut rng = PRNG::seed(0);
 
-        let x_plus_light = Light{
+        let x_plus_light = Light {
             power: Sample::Constant(1.0),
             x: Sample::Constant(100.0),
             y: Sample::Constant(700.0),
@@ -362,12 +379,15 @@ mod test {
         let ray = Ray::new(&x_plus_light, &mut rng);
 
         // wall from 1,-10 to 11, +10 should be in the way
-        let p1 = Point{ x: 0.0, y: 0.0, };
-        let p2 = Point{ x: 200.0, y: 1000.0, };
+        let p1 = Point { x: 0.0, y: 0.0 };
+        let p2 = Point {
+            x: 200.0,
+            y: 1000.0,
+        };
         let aabb = Rect::from_points(&p1, &p2);
 
         let result = ray.furthest_aabb(aabb);
-        
+
         // check hit!
         assert!(result.is_some());
         let result = result.unwrap();

@@ -2,9 +2,9 @@ extern crate png;
 extern crate rustic_zen;
 
 // For reading and opening files
-use std::path::Path;
 use std::fs::File;
 use std::io::BufWriter;
+use std::path::Path;
 // To use encoder.set()
 use png::HasParameters;
 
@@ -19,26 +19,34 @@ fn main() {
 
     let o = Object::Line {
         x0: Sample::Constant(0.0),
-        y0: Sample::Constant(height*0.75),
+        y0: Sample::Constant(height * 0.75),
         dx: Sample::Constant(width),
         dy: Sample::Constant(0.0),
         material: m,
     };
 
-    let l = Light{
+    let l = Light {
         power: Sample::Constant(1.0),
-        x: Sample::Constant(width/2.0),
-        y: Sample::Constant(height/2.0),
+        x: Sample::Constant(width / 2.0),
+        y: Sample::Constant(height / 2.0),
         polar_angle: Sample::Constant(0.0),
         polar_distance: Sample::Constant(0.0),
         ray_angle: Sample::Range(360.0, 0.0),
         wavelength: Sample::Blackbody(4500.0),
     };
 
-    let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
+    let viewport = Rect::from_points(
+        &Point { x: 0.0, y: 0.0 },
+        &Point {
+            x: width,
+            y: height,
+        },
+    );
 
     println!("Tracing Rays!");
-    let r = Renderer::new(width as usize, height as usize, viewport).with_object(o).with_light(l);
+    let r = Renderer::new(width as usize, height as usize, viewport)
+        .with_object(o)
+        .with_light(l);
     let image = r.render(rays);
 
     println!("Serializing!");

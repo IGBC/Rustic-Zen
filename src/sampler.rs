@@ -11,19 +11,19 @@ use std::f64;
 ///  - linear range between two values
 ///  - A Blackbody Curve of temperature K
 pub enum Sample {
-        /// A constant Value
-        Constant(f64),
-        /// A Blackbody Curve of given temprature
-        /// 
-        /// Realistically only useful for light wavelengths.
-        Blackbody(f64),
-        /// A value sampled linierly from the given range.
-        /// 
-        /// The larger value must be the first argument or it will panic,
-        /// rustic-zen is about going fast not holding your hand and these samplers
-        /// are in the critical path
-        Range(f64,f64),
-    }
+    /// A constant Value
+    Constant(f64),
+    /// A Blackbody Curve of given temprature
+    ///
+    /// Realistically only useful for light wavelengths.
+    Blackbody(f64),
+    /// A value sampled linierly from the given range.
+    ///
+    /// The larger value must be the first argument or it will panic,
+    /// rustic-zen is about going fast not holding your hand and these samplers
+    /// are in the critical path
+    Range(f64, f64),
+}
 
 impl Sample {
     /// Returns next value of this sampler
@@ -31,16 +31,16 @@ impl Sample {
         match self {
             Sample::Constant(i) => i.clone(),
             Sample::Blackbody(k) => blackbody_wavelength(k.clone(), sampler.uniform_f64()),
-            Sample::Range(l, u) => sampler.uniform_range(l.clone(), u.clone()), 
+            Sample::Range(l, u) => sampler.uniform_range(l.clone(), u.clone()),
         }
     }
 
     /// Returns upper and lower bounds of this Sample.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use rustic_zen::prelude::Sample;
-    /// 
+    ///
     /// let f = Sample::Range(1.0, 0.0);
     /// let (upper, lower) = f.bounds();
     /// assert_eq!(lower, 0.0);
@@ -50,7 +50,7 @@ impl Sample {
         match self {
             Sample::Constant(i) => (i.clone(), i.clone()),
             //Sample::Blackbody(k) => (k, k), //TODO Actually work out what these are.
-            Sample::Range(u,l) => (u.clone(), l.clone()),
+            Sample::Range(u, l) => (u.clone(), l.clone()),
             _ => (f64::MIN, f64::MAX),
         }
     }
@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn val_const() {
         let mut rng = PRNG::seed(0);
-        
+
         let mut stdrng = rand::thread_rng();
         let f: f64 = stdrng.gen();
         let s = Sample::Constant(f);
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn val_range() {
         let mut rng = PRNG::seed(0);
-        
+
         let mut stdrng = rand::thread_rng();
         let mut f1: f64 = stdrng.gen();
         let mut f2: f64 = stdrng.gen();

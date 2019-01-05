@@ -1,17 +1,17 @@
-use geom::{Point, Vector, Rect};
-use sampler::Sample;
+use geom::{Point, Rect, Vector};
 use prng::PRNG;
+use sampler::Sample;
 use std::f64::consts::PI;
 
 use material::Material;
 
 /// Holds a definition of an object
-/// 
+///
 /// Interally contains the associated logic.
 
 pub enum Object {
     /// Straight line varient
-    Line{
+    Line {
         /// Material used
         material: Box<Material>,
         /// Starting x Position
@@ -24,10 +24,10 @@ pub enum Object {
         dy: Sample,
     },
     /// Curve Varient, completely untested and in places inplemented
-    /// as a straight line. 
-    /// 
+    /// as a straight line.
+    ///
     /// **Do not Use!.**
-    Curve{
+    Curve {
         /// Material used
         material: Box<Material>,
         /// Starting x Position
@@ -48,17 +48,19 @@ pub enum Object {
 impl Object {
     /// Returns a rectangle enclosing The Object.
     /// Currently does not support curved lines, cos math is hard.
+    #[inline(always)]
     pub fn bounds(&self) -> Rect {
         match self {
-            Object::Curve{..} => {
-                // TODO: implement this, 
+            Object::Curve { .. } => {
+                // TODO: implement this,
                 // its the same algorithm as for the line,
                 // the curve will always fit in the box.
                 unimplemented!();
-            },
-            Object::Line{x0, y0, dx, dy, ..} => {
+            }
+            Object::Line { x0, y0, dx, dy, .. } => {
                 let mut x_s = [
-                    x0.bounds().0, x0.bounds().1,
+                    x0.bounds().0,
+                    x0.bounds().1,
                     x0.bounds().0 + dx.bounds().0,
                     x0.bounds().0 + dx.bounds().1,
                     x0.bounds().1 + dx.bounds().0,
@@ -67,7 +69,8 @@ impl Object {
                 x_s.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
                 let mut y_s = [
-                    y0.bounds().0, y0.bounds().1,
+                    y0.bounds().0,
+                    y0.bounds().1,
                     y0.bounds().0 + dy.bounds().0,
                     y0.bounds().0 + dy.bounds().1,
                     y0.bounds().1 + dy.bounds().0,
@@ -79,7 +82,7 @@ impl Object {
                     x: x_s[0],
                     y: y_s[0],
                 };
-                
+
                 let p1 = Point {
                     x: x_s[x_s.len()],
                     y: y_s[y_s.len()],
@@ -95,8 +98,8 @@ impl Object {
      */
     pub fn get_material(&self) -> &Box<Material> {
         match self {
-            Object::Curve{material, ..} => material,
-            Object::Line {material, ..} => material,
+            Object::Curve { material, .. } => material,
+            Object::Line { material, .. } => material,
         }
     }
 
@@ -106,64 +109,77 @@ impl Object {
      * to the hit surface.
      *
      * If miss it returns None
-     * 
-     * This test assumes you have done a box test to 
+     *
+     * This test assumes you have done a box test to
      * check the bounds of the line first
      */
-    pub fn get_hit(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> Option<(Point, Vector, f64)> {
+    #[inline(always)]
+    pub fn get_hit(
+        &self,
+        origin: &Point,
+        dir: &Vector,
+        rng: &mut PRNG,
+    ) -> Option<(Point, Vector, f64)> {
         // Get s1 and sD from samples
         let (s1, sd) = match self {
-            Object::Curve{x0, y0, dx, dy, ..} => (
-                Point{
+            Object::Curve { x0, y0, dx, dy, .. } => (
+                Point {
                     x: x0.val(rng),
                     y: y0.val(rng),
                 },
-                Point{
+                Point {
                     x: dx.val(rng),
                     y: dy.val(rng),
-                }),
+                },
+            ),
 
-            Object::Line{x0, y0, dx, dy, ..} => (
-                Point{
+            Object::Line { x0, y0, dx, dy, .. } => (
+                Point {
                     x: x0.val(rng),
                     y: y0.val(rng),
                 },
-                Point{
+                Point {
                     x: dx.val(rng),
                     y: dy.val(rng),
-                }),
+                },
+            ),
         };
 
         let slope = dir.y / dir.x;
         let alpha = ((s1.x - origin.x) * slope + (origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 { return None; }
-        if alpha > 1.0 { return None; }
+        if alpha < 0.0 {
+            return None;
+        }
+        if alpha > 1.0 {
+            return None;
+        }
 
         let distance = (s1.x + sd.x * alpha - origin.x) / dir.x;
-        if distance < 0.0 { return None; }
+        if distance < 0.0 {
+            return None;
+        }
 
         let (hit, norm) = match self {
-            Object::Line{..} => (
+            Object::Line { .. } => (
                 Point {
                     x: origin.x + distance * dir.x,
                     y: origin.y + distance * dir.y,
                 },
-                Vector {
-                    x: -sd.y,
-                    y: sd.x,
-                }
+                Vector { x: -sd.y, y: sd.x },
             ),
-            Object::Curve{a0, da, ..} => {
+            Object::Curve { a0, da, .. } => {
                 let deg = a0.val(rng) + alpha as f64 * da.val(rng);
                 let rad = deg * (PI / 180.0);
-                (Point {
-                    x: origin.x + distance * dir.x,
-                    y: origin.y + distance * dir.y,
-                },
-                Vector {
-                    x: f64::cos(rad),
-                    y: f64::sin(rad),
-                })
+                (
+                    Point {
+                        x: origin.x + distance * dir.x,
+                        y: origin.y + distance * dir.y,
+                    },
+                    Vector {
+                        x: f64::cos(rad),
+                        y: f64::sin(rad),
+                    },
+                )
             }
         };
 
@@ -174,10 +190,10 @@ impl Object {
 #[cfg(test)]
 mod tests {
     use super::Object;
-    use sampler::Sample;
-    use geom::{ Point, Vector };
-    use prng::PRNG;
+    use geom::{Point, Vector};
     use material::HQZLegacy;
+    use prng::PRNG;
+    use sampler::Sample;
 
     #[test]
     /// Ray hits object test
@@ -187,7 +203,7 @@ mod tests {
 
         let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
-        let obj = Object::Line{
+        let obj = Object::Line {
             x0: Sample::Constant(0.0),
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
@@ -195,15 +211,14 @@ mod tests {
             material: m,
         };
 
-        let origin = Point {x: 10.0, y: 0.0};
-        let dir   = Vector {x: -1.0, y: 1.0};
-
+        let origin = Point { x: 10.0, y: 0.0 };
+        let dir = Vector { x: -1.0, y: 1.0 };
 
         let a = obj.get_hit(&origin, &dir, &mut rng);
 
         assert!(a.is_some());
         let (a, b, _) = a.unwrap();
-        
+
         //assert hit is at (5,5)
         assert_eq!(a.x, 5.0);
         assert_eq!(a.y, 5.0);
@@ -223,7 +238,7 @@ mod tests {
 
         let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
-        let obj = Object::Line{
+        let obj = Object::Line {
             x0: Sample::Constant(0.0),
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
@@ -231,25 +246,24 @@ mod tests {
             material: m,
         };
 
-        let origin = Point {x: 30.0, y: 0.0};
-        let dir   = Vector {x: -1.0, y: 1.0};
-
+        let origin = Point { x: 30.0, y: 0.0 };
+        let dir = Vector { x: -1.0, y: 1.0 };
 
         let a = obj.get_hit(&origin, &dir, &mut rng);
 
         assert!(a.is_none());
     }
-    
+
     #[test]
     /// Vector Going the wrong way test
     /// Test result should be None, as Ray is going 180°
-    /// in the wrong direction to hit the object. 
+    /// in the wrong direction to hit the object.
     fn miss_line_2() {
         let mut rng = PRNG::seed(0);
 
         let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
-        let obj = Object::Line{
+        let obj = Object::Line {
             x0: Sample::Constant(0.0),
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
@@ -257,9 +271,8 @@ mod tests {
             material: m,
         };
 
-        let origin = Point {x: 10.0, y: 0.0};
-        let dir   = Vector {x: 1.0, y: 1.0};
-
+        let origin = Point { x: 10.0, y: 0.0 };
+        let dir = Vector { x: 1.0, y: 1.0 };
 
         let a = obj.get_hit(&origin, &dir, &mut rng);
 
