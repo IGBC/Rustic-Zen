@@ -47,10 +47,10 @@
 //!     let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
 //!
 //!     // Construct a renderer object and add the light and object to it.
-//!     let r = Renderer::new(width as usize, height as usize, viewport).with_object(o).with_light(l);
+//!     let s = Scene::new(width as usize, height as usize, viewport).with_object(o).with_light(l);
 //!     // Render Image
 //!     println!("Tracing Rays");
-//!     let image = r.render(rays);
+//!     let image = s.render(rays);
 //!
 //!     // Output the Image as a Vec<u8>
 //!     println!("Serializing!");
@@ -70,7 +70,6 @@ extern crate rand;
 pub mod geom;
 
 mod material;
-mod niave_rt;
 mod object;
 mod sampler;
 mod scene;
@@ -79,18 +78,16 @@ mod scene;
 pub mod prelude {
     pub use geom::{Point, Rect};
     pub use material::{HQZLegacy, Material};
-    pub use niave_rt::Renderer;
     pub use object::Object;
     pub use sampler::Sample;
-    pub use scene::Light;
+    pub use scene::{Light, Scene};
 }
 
 // Rexport everything for documentation use.
 pub use material::{HQZLegacy, Material};
-pub use niave_rt::Renderer;
 pub use object::Object;
 pub use sampler::Sample;
-pub use scene::Light;
+pub use scene::{Light, Scene};
 pub use image::Image;
 
 mod image;
@@ -113,10 +110,10 @@ mod tests {
     use png::HasParameters;
 
     //Scene Parameters
-    use niave_rt::Renderer;
     use object::Object;
     use sampler::Sample;
     use scene::Light;
+    use scene::Scene;
 
     use geom::{Point, Rect};
 
@@ -144,7 +141,7 @@ mod tests {
                 y: height,
             },
         );
-        let r = Renderer::new(width as usize, height as usize, viewport).with_light(l);
+        let r = Scene::new(width as usize, height as usize, viewport).with_light(l);
         let image = r.render(10_000);
 
         let data = image.to_rgb8(0.5, 0.5);
@@ -194,7 +191,7 @@ mod tests {
             },
         );
 
-        let r = Renderer::new(width as usize, height as usize, viewport)
+        let r = Scene::new(width as usize, height as usize, viewport)
             .with_light(l)
             .with_object(o);
         let image = r.render(rays);

@@ -44,7 +44,7 @@ fn main() {
     );
 
     println!("Tracing Rays!");
-    let r = Renderer::new(width as usize, height as usize, viewport)
+    let r = Scene::new(width as usize, height as usize, viewport)
         .with_object(o)
         .with_light(l);
     let image = r.render(rays);

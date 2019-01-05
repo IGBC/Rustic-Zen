@@ -22,6 +22,11 @@ test:unit-tests:
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo test --all --verbose
+    artifacts:
+    paths:
+    - image.ray_not_black.png
+    - lib.png_test.png
+    - lib.png_test2.png
 
 test:example-dawn:
   script:

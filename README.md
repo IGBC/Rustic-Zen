@@ -52,7 +52,7 @@ fn main() {
     // We also need a viewport
     let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
     // Construct a renderer object and add the light and object to it.
-    let r = Renderer::new(width as usize, height as usize, viewport).with_object(o)with_light(l);
+    let r = Scene::new(width as usize, height as usize, viewport).with_object(o)with_light(l);
     // Render Image
     println!("Tracing Rays");
     let image = r.render(rays);
