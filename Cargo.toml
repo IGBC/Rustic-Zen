@@ -1,6 +1,6 @@
 [package]
 name = "rustic-zen"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["SEGFAULT <fakespamtrap@gmail.com>"]
 
 [dev-dependencies]
