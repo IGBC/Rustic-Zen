@@ -1,6 +1,11 @@
 [package]
 name = "rustic-zen"
 version = "0.0.1"
+description = "Photon-Garden raytracer for creating artistic renderings"
+license = "CC-BY-NC-SA-4.0"
+repository = "https://gitlab.com/IGBC/rustic-zen"
+keywords = ["zen", "photon", "garden", "HQZ", "raytracer"]
+catagories = ["multimedia::images", "rendering"]
 authors = ["SEGFAULT <fakespamtrap@gmail.com>"]
 
 [dev-dependencies]

@@ -166,7 +166,7 @@ mod tests {
         let height: f64 = 1024.0;
         let rays = (width * height / 100.0).round() as usize;
 
-        let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
+        let m = Box::new(HQZLegacy::default());
 
         let o = Object::Line {
             x0: Sample::Constant(0.0),
