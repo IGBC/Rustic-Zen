@@ -75,14 +75,16 @@ mod scene;
 mod object;
 mod niave_rt;
 mod geom;
+mod material;
 
 /// This prelude contains everything to quickstart using Rustic Zen. 
 pub mod prelude {
     pub use sampler::Sample;
-    pub use scene::{Light, Material};
+    pub use scene::Light;
     pub use object::Object;
     pub use niave_rt::Renderer;
     pub use geom::{Point, Rect};
+    pub use material::{Material, HQZLegacy};
 }
 
 mod spectrum;
@@ -107,11 +109,13 @@ mod tests {
 
     //Scene Parameters
     use object::Object;
-    use scene::{Material, Light};
+    use scene::Light;
     use sampler::Sample;
     use niave_rt::Renderer;
 
     use geom::{Point, Rect};
+
+    use material::HQZLegacy;
 
     #[test]
     fn png_test() {
@@ -160,16 +164,14 @@ mod tests {
         let height: f64 = 1024.0;
         let rays = (width * height / 100.0).round() as usize;
 
-        let m = Material {
-            d: 0.3, r: 0.3, t: 0.3,
-        };
+        let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
         let o = Object::Line {
             x0: Sample::Constant(0.0),
             y0: Sample::Constant(height*0.75),
             dx: Sample::Constant(width),
             dy: Sample::Constant(0.0),
-            material: m.clone(),
+            material: m,
         };
 
         let l = Light{

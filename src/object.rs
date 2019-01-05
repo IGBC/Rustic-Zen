@@ -1,18 +1,19 @@
 use geom::{Point, Vector, Rect};
-use scene::Material;
 use sampler::Sample;
 use prng::PRNG;
 use std::f64::consts::PI;
 
+use material::Material;
+
 /// Holds a definition of an object
 /// 
 /// Interally contains the associated logic.
-#[derive(Clone, Copy, Debug)]
+
 pub enum Object {
     /// Straight line varient
     Line{
         /// Material used
-        material: Material,
+        material: Box<Material>,
         /// Starting x Position
         x0: Sample,
         /// Starting y Position
@@ -28,7 +29,7 @@ pub enum Object {
     /// **Do not Use!.**
     Curve{
         /// Material used
-        material: Material,
+        material: Box<Material>,
         /// Starting x Position
         x0: Sample,
         /// Starting y Position
@@ -92,7 +93,7 @@ impl Object {
     /**
      * Returns a reference to the material used in this object
      */
-    pub fn get_material(&self) -> &Material {
+    pub fn get_material(&self) -> &Box<Material> {
         match self {
             Object::Curve{material, ..} => material,
             Object::Line {material, ..} => material,
@@ -109,7 +110,7 @@ impl Object {
      * This test assumes you have done a box test to 
      * check the bounds of the line first
      */
-    pub fn get_hit(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> Option<(Point, Vector)> {
+    pub fn get_hit(&self, origin: &Point, dir: &Vector, rng: &mut PRNG) -> Option<(Point, Vector, f64)> {
         // Get s1 and sD from samples
         let (s1, sd) = match self {
             Object::Curve{x0, y0, dx, dy, ..} => (
@@ -166,17 +167,17 @@ impl Object {
             }
         };
 
-        return Some((hit, norm));
+        return Some((hit, norm, alpha));
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::Object;
-    use scene::Material;
     use sampler::Sample;
     use geom::{ Point, Vector };
     use prng::PRNG;
+    use material::HQZLegacy;
 
     #[test]
     /// Ray hits object test
@@ -184,9 +185,7 @@ mod tests {
     fn hit_line_1() {
         let mut rng = PRNG::seed(0);
 
-        let m = Material {
-            d: 0.3, r: 0.3, t: 0.3, 
-        };
+        let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
         let obj = Object::Line{
             x0: Sample::Constant(0.0),
@@ -203,7 +202,7 @@ mod tests {
         let a = obj.get_hit(&origin, &dir, &mut rng);
 
         assert!(a.is_some());
-        let (a, b) = a.unwrap();
+        let (a, b, _) = a.unwrap();
         
         //assert hit is at (5,5)
         assert_eq!(a.x, 5.0);
@@ -222,9 +221,7 @@ mod tests {
     fn miss_line_1() {
         let mut rng = PRNG::seed(0);
 
-        let m = Material {
-            d: 0.3, r: 0.3, t: 0.3, 
-        };
+        let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
         let obj = Object::Line{
             x0: Sample::Constant(0.0),
@@ -250,9 +247,7 @@ mod tests {
     fn miss_line_2() {
         let mut rng = PRNG::seed(0);
 
-        let m = Material {
-            d: 0.3, r: 0.3, t: 0.3, 
-        };
+        let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
         let obj = Object::Line{
             x0: Sample::Constant(0.0),

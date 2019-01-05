@@ -48,33 +48,6 @@ impl Ray {
         return &self.origin;
     }
 
-    /**
-     * Computes fate of this ray, 
-     * returns option wrapping direciton of new ray, 
-     * none if no new ray.
-     */
-    fn outcome(&self, obj: &Object, normal: &Vector, rng: &mut PRNG) -> Option<Vector> {
-        let mat = obj.get_material();
-        let f = rng.uniform_f64();
-        
-        if f <= mat.d {
-            let angle = rng.uniform_range(2.0 * PI, 0.0);
-            return Some(Vector{x: f64::cos(angle), y: f64::sin(angle)});
-        }
-
-        if f <= mat.d + mat.r {
-            let angle = self.direction.reflect(normal);
-            return Some(angle);
-        }
-
-        if f <= mat.d + mat.r + mat.t {
-            let angle = self.direction.clone();
-            return Some(angle);
-        }
-
-        None
-    }
-
     pub fn collision_list(&self, obj_list: &Vec<Object>, viewport: Rect, image: &mut Image, rng: &mut PRNG) -> Option<Self> {
         // get closest Collision
         // Mercifully O(N)
@@ -123,9 +96,9 @@ impl Ray {
      */
     pub fn bounce(&self, obj: &Object, rng: &mut PRNG) -> Option<Self> {
         // Todo get actual ray start. And do an actual collision test
-        let (hit, normal) = match obj.get_hit(&self.origin, &self.direction, rng){
+        let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, rng){
             None => {return None},
-            Some((hit, normal)) => (hit, normal),
+            Some((hit, normal, alpha)) => (hit, normal, alpha),
         };
 
         let dist = self.origin.distance(&hit);
@@ -134,7 +107,8 @@ impl Ray {
             return None;
         }
 
-        let outcome = self.outcome(obj, &normal, rng);
+        let mat = obj.get_material();
+        let outcome = mat.outcome(&self.direction, &normal, self.wavelength, alpha, rng);
         let direction = match outcome {
             Some(o) => o,
             None => {return None;}, 

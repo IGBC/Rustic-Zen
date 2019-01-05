@@ -28,15 +28,15 @@ fn main() {
     let height: f64 = 1080.0;
     let rays = 1_000_000; //(width * height).round() as usize;
 
-    let wall_m = Material  { d: 1.0, r: 0.0, t: 0.0, };
-    let floor_m = Material { d: 0.1, r: 0.3, t: 0.5, };
+    let wall_m = HQZLegacy::new(1.0, 0.0, 0.0);
+    let floor_m = HQZLegacy::new(0.1, 0.3, 0.5);
 
     let top = Object::Line {
         x0: Sample::Constant(0.0),
         y0: Sample::Constant(0.0),
         dx: Sample::Constant(width),
         dy: Sample::Constant(0.0),
-        material: wall_m.clone(),
+        material: Box::new(wall_m.clone()),
     };
 
     let bottom = Object::Line {
@@ -44,7 +44,7 @@ fn main() {
         y0: Sample::Constant(0.0),
         dx: Sample::Constant(width),
         dy: Sample::Constant(0.0),
-        material: wall_m.clone(),
+        material: Box::new(wall_m.clone()),
     };
 
     let left = Object::Line {
@@ -52,7 +52,7 @@ fn main() {
         y0: Sample::Constant(0.0),
         dx: Sample::Constant(0.0),
         dy: Sample::Constant(height),
-        material: wall_m.clone(),
+        material: Box::new(wall_m.clone()),
     };
 
     let right = Object::Line {
@@ -60,7 +60,7 @@ fn main() {
         y0: Sample::Constant(width),
         dx: Sample::Constant(0.0),
         dy: Sample::Constant(height),
-        material: wall_m.clone(),
+        material: Box::new(wall_m.clone()),
     };
 
     let floor = Object::Line {
@@ -68,7 +68,7 @@ fn main() {
         y0: Sample::Constant(height*0.72),
         dx: Sample::Constant(width),
         dy: Sample::Range(70.0, -20.0),
-        material: floor_m.clone(),
+        material: Box::new(floor_m.clone()),
     };
 
     let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width+1.0,y: height+1.0});

@@ -92,22 +92,21 @@ impl Renderer {
 mod tests {
     use super::Renderer;
     use object::Object;
-    use scene::{Material, Light};
+    use scene::Light;
     use sampler::Sample;
     use geom::{Point,Rect};
+    use material::HQZLegacy;
     
     #[test]
     fn nrt_works(){
-        let m = Material {
-            d: 0.3, r: 0.3, t: 0.3, 
-        };
+        let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
         let obj = Object::Line{
             x0: Sample::Constant(0.0),
             y0: Sample::Constant(0.0),
             dx: Sample::Constant(10.0),
             dy: Sample::Constant(10.0),
-            material: m.clone(),
+            material: m,
         };
 
         let l = Light{
