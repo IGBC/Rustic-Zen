@@ -54,8 +54,7 @@
 //!
 //!     // Output the Image as a Vec<u8>
 //!     println!("Serializing!");
-//!     let scale = image.calculate_scale(0.7);
-//!     let data = image.to_rgb8(scale, 1.2);
+//!     let data = image.to_rgb8(0.7, 1.2);
 //!     
 //!     // Do Export to a PNG or whatever you want here.
 //! }
@@ -68,7 +67,8 @@ extern crate png;
 #[cfg(test)]
 extern crate rand;
 
-mod geom;
+pub mod geom;
+
 mod material;
 mod niave_rt;
 mod object;
@@ -84,6 +84,14 @@ pub mod prelude {
     pub use sampler::Sample;
     pub use scene::Light;
 }
+
+// Rexport everything for documentation use.
+pub use material::{HQZLegacy, Material};
+pub use niave_rt::Renderer;
+pub use object::Object;
+pub use sampler::Sample;
+pub use scene::Light;
+pub use image::Image;
 
 mod image;
 mod prng;
@@ -139,15 +147,7 @@ mod tests {
         let r = Renderer::new(width as usize, height as usize, viewport).with_light(l);
         let image = r.render(10_000);
 
-        let mut count: f64 = 0.0;
-        for p in image.pixels.iter() {
-            count += p.0;
-        }
-        assert_ne!(count, 0.0);
-
-        let scale = image.calculate_scale(0.5);
-
-        let data = image.to_rgb8(scale, 0.5);
+        let data = image.to_rgb8(0.5, 0.5);
         //let data = image.dumb_to_rgb8();
 
         let path = Path::new(r"lib.png_test.png");
@@ -199,15 +199,7 @@ mod tests {
             .with_object(o);
         let image = r.render(rays);
 
-        let mut count: u128 = 0;
-        for p in image.pixels.iter() {
-            count += p.0 as u128;
-        }
-        assert_ne!(count, 0);
-
-        let scale = image.calculate_scale(0.5);
-
-        let data = image.to_rgb8(scale, 0.5);
+        let data = image.to_rgb8(0.5, 0.5);
         //let data = image.dumb_to_rgb8();
 
         let path = Path::new(r"lib.png_test_2.png");
