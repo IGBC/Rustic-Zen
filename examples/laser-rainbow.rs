@@ -80,7 +80,7 @@ fn main() {
     );
 
     println!("Tracing Rays!");
-    let r = Renderer::new(width as usize, height as usize, viewport)
+    let r = Scene::new(width as usize, height as usize, viewport)
         .with_light(laser(30.0, 694.0))
         .with_light(laser(31.0, 676.0))
         .with_light(laser(32.0, 647.0))
