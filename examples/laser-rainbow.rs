@@ -112,8 +112,7 @@ fn main() {
     let image = r.render(rays);
 
     println!("Serializing!");
-    let scale = image.calculate_scale(0.2);
-    let data = image.to_rgb8(scale, 1.0 / 2.2); //1.0/2.2
+    let data = image.to_rgb8(0.2, 1.0 / 2.2); //1.0/2.2
 
     println!("Saving!");
     let path = Path::new(r"laser-rainbow.png");

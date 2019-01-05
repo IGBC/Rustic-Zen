@@ -2,15 +2,27 @@ use prng::PRNG;
 use spectrum::wavelength_to_colour;
 use std::mem::swap;
 
+/// Represents an image while ray rendering is happening
+/// 
+/// This struct uses floats to represent each pixel of the image so normalisation
+/// can happen after rendering finishes. 
+/// 
+/// Image is created and populated by the renderer. Only export functions are exposed. 
 pub struct Image {
     width: usize,
     height: usize,
-    pub pixels: Vec<(f64, f64, f64)>,
+    pixels: Vec<(f64, f64, f64)>,
     rays: usize,
     lightpower: f64,
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+// Using the undocumented functions outside of the library will bypass the raytracer. //
+// So only do that if you really mean to!                                             //
+////////////////////////////////////////////////////////////////////////////////////////
+
 impl Image {
+    #[doc(hidden)]
     pub fn new(width: usize, height: usize, lightpower: f64) -> Self {
         let len = width * height;
         let pixels: Vec<(f64, f64, f64)> = vec![(0.0, 0.0, 0.0); len];
@@ -24,6 +36,7 @@ impl Image {
     }
 
     #[inline]
+    #[doc(hidden)]
     fn plot(&mut self, colour: (f64, f64, f64), pixel: usize, intensity: f64) {
         // Bounds checking;
         /*if (x < 0) || (y < 0) { return; };
@@ -45,6 +58,8 @@ impl Image {
         self.pixels[pixel] = p;
     }
 
+    #[inline]
+    #[doc(hidden)]
     pub fn draw_line(
         &mut self,
         wavelength: f64,
@@ -168,7 +183,7 @@ impl Image {
         }
     }
 
-    pub fn calculate_scale(&self, exposure: f64) -> f64 {
+    fn calculate_scale(&self, exposure: f64) -> f64 {
         let area_scale = f64::sqrt((self.width as f64 * self.height as f64) / (1024.0 * 576.0));
         let intensity_scale = self.lightpower / (255.0 * 8192.0);
         let scale =
@@ -182,7 +197,14 @@ impl Image {
         scale
     }
 
-    pub fn to_rgb8(&self, scale: f64, exponent: f64) -> Vec<u8> {
+    /// Outputs the image. 
+    /// Serialsiing the image to a sequence of 8 bit RGB samples stored in a `Vec<u8>`, 
+    /// suitible for use in file streams and other outputs.
+    /// 
+    /// This function also normalises the image applying exposure and gamma. 
+    /// gamma is passed in the form of an exponent which is defined as `1.0 / gamma`
+    pub fn to_rgb8(&self, exposure: f64, exponent: f64) -> Vec<u8> {
+        let scale = self.calculate_scale(exposure);
         let mut rng = PRNG::seed(0);
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
@@ -238,8 +260,7 @@ mod tests {
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
-        let scale = i.calculate_scale(0.3);
-        let data = i.to_rgb8(scale, 1.0);
+        let data = i.to_rgb8(0.3, 1.0);
 
         let mut encoder = png::Encoder::new(w, 100, 100);
         encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
