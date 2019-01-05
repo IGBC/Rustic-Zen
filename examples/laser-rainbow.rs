@@ -112,7 +112,7 @@ fn main() {
     let image = r.render(rays);
 
     println!("Serializing!");
-    let scale = image.calculate_scale(23.0, 0.2);
+    let scale = image.calculate_scale(0.2);
     let data = image.to_rgb8(scale, 1.0 / 2.2); //1.0/2.2
 
     println!("Saving!");

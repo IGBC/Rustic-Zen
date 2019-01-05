@@ -54,7 +54,7 @@
 //!
 //!     // Output the Image as a Vec<u8>
 //!     println!("Serializing!");
-//!     let scale = image.calculate_scale(1.0, 0.7);
+//!     let scale = image.calculate_scale(0.7);
 //!     let data = image.to_rgb8(scale, 1.2);
 //!     
 //!     // Do Export to a PNG or whatever you want here.
@@ -145,7 +145,7 @@ mod tests {
         }
         assert_ne!(count, 0.0);
 
-        let scale = image.calculate_scale(1.0, 0.5);
+        let scale = image.calculate_scale(0.5);
 
         let data = image.to_rgb8(scale, 0.5);
         //let data = image.dumb_to_rgb8();
@@ -205,7 +205,7 @@ mod tests {
         }
         assert_ne!(count, 0);
 
-        let scale = image.calculate_scale(1.0, 0.5);
+        let scale = image.calculate_scale(0.5);
 
         let data = image.to_rgb8(scale, 0.5);
         //let data = image.dumb_to_rgb8();

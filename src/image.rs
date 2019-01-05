@@ -7,10 +7,11 @@ pub struct Image {
     height: usize,
     pub pixels: Vec<(f64, f64, f64)>,
     rays: usize,
+    lightpower: f64,
 }
 
 impl Image {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: usize, height: usize, lightpower: f64) -> Self {
         let len = width * height;
         let pixels: Vec<(f64, f64, f64)> = vec![(0.0, 0.0, 0.0); len];
         Image {
@@ -18,6 +19,7 @@ impl Image {
             height,
             pixels,
             rays: 0,
+            lightpower,
         }
     }
 
@@ -29,7 +31,7 @@ impl Image {
         let y = y as usize;
         if x > self.width { return; };
         if y > self.height { return; };
-        
+
         let i = (x + (y * self.width)).saturating_sub(1);*/
         if pixel >= self.pixels.len() {
             return;
@@ -166,15 +168,15 @@ impl Image {
         }
     }
 
-    pub fn calculate_scale(&self, lightpower: f64, exposure: f64) -> f64 {
+    pub fn calculate_scale(&self, exposure: f64) -> f64 {
         let area_scale = f64::sqrt((self.width as f64 * self.height as f64) / (1024.0 * 576.0));
-        let intensity_scale = lightpower / (255.0 * 8192.0);
+        let intensity_scale = self.lightpower / (255.0 * 8192.0);
         let scale =
             f64::exp(1.0 + 10.0 * exposure) * area_scale * intensity_scale / self.rays as f64;
 
         println!(
             "Image Statistics: raycount = {}, lightpower = {}, scale = {}",
-            self.rays, lightpower, scale
+            self.rays, self.lightpower, scale
         );
 
         scale
@@ -222,7 +224,7 @@ mod tests {
 
     #[test]
     fn traced_ray_is_not_black() {
-        let mut i = Image::new(100, 100);
+        let mut i = Image::new(100, 100, 1.0);
         i.draw_line(620.0, 10.0, 10.0, 90.0, 90.0); //red
         i.draw_line(520.0, 20.0, 10.0, 90.0, 80.0); //green
         i.draw_line(470.0, 10.0, 20.0, 80.0, 90.0); //blue
@@ -236,7 +238,7 @@ mod tests {
         let file = File::create(path).unwrap();
         let ref mut w = BufWriter::new(file);
 
-        let scale = i.calculate_scale(1.0, 0.3);
+        let scale = i.calculate_scale(0.3);
         let data = i.to_rgb8(scale, 1.0);
 
         let mut encoder = png::Encoder::new(w, 100, 100);
@@ -247,7 +249,7 @@ mod tests {
 
     #[test]
     fn empty_image_is_black() {
-        let i = Image::new(1920, 1080);
+        let i = Image::new(1920, 1080, 1.0);
         let v = i.to_rgb8(1.0, 1.0);
         for i in v.iter() {
             assert_eq!(i.clone(), 0u8);
@@ -256,7 +258,7 @@ mod tests {
 
     #[test]
     fn output_len() {
-        let i = Image::new(1920, 1080);
+        let i = Image::new(1920, 1080, 1.0);
         let v = i.to_rgb8(1.0, 1.0);
         assert_eq!(v.len(), 1920 * 1080 * 3);
     }

@@ -79,7 +79,7 @@ impl Renderer {
     /// and returns an Image class containing the rendered image data.
     pub fn render(self, rays: usize) -> Image {
         let mut rng = PRNG::seed(self.seed);
-        let mut image = Image::new(self.resolution_x, self.resolution_y);
+        let mut image = Image::new(self.resolution_x, self.resolution_y, self.total_light_power);
         for _i in 0..rays {
             self.trace_ray(&mut image, &mut rng);
         }
