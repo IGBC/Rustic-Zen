@@ -23,7 +23,7 @@ before_script:
   - apt-get install -yqq optipng imagemagick
 
 build:
-  stage: test
+  stage: build
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo build
