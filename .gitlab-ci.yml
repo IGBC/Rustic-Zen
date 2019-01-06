@@ -6,7 +6,7 @@ image: "rust:latest"
 stages:
   - build
   - test
-  - images
+  - image
 
 # Optional: Pick zero or more services to be used on all builds.
 # Only needed when using a docker container to run your tests in.
@@ -74,6 +74,9 @@ example-laser-rainbow:
 image-compression:
   stage: image
   script: "mkdir image; for i in *.png; do optipng $i -out image/$i ; done"
+  artifacts:
+    paths:
+    - image/
 
 image-thumbnailing:
   stage: image
