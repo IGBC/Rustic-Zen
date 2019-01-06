@@ -3,6 +3,11 @@
 # https://hub.docker.com/r/library/rust/tags/
 image: "rust:latest"
 
+stages:
+  - build
+  - test
+  - images
+
 # Optional: Pick zero or more services to be used on all builds.
 # Only needed when using a docker container to run your tests in.
 # Check out: http://docs.gitlab.com/ce/ci/docker/using_docker_images.html#what-is-a-service
@@ -13,32 +18,66 @@ image: "rust:latest"
 
 # Optional: Install a C compiler, cmake and git into the container.
 # You will often need this when you (or any of your dependencies) depends on C code.
-#before_script:
-#- apt-get update -yqq
-#- apt-get install -yqq --no-install-recommends build-essential
+before_script:
+  - apt-get update -yqq
+  - apt-get install -yqq optipng imagemagick
 
-# Use cargo to test the project
-test:unit-tests:
+build:
+  stage: test
   script:
   - rustc --version && cargo --version      # Print version info for debugging
-  - cargo test --all --verbose
-    artifacts:
+  - cargo build
+  - cargo build --examples
+  - cargo build --release
+  - cargo build --examples --release
+  artifacts:
+    paths:
+      - target/
+
+
+unit-tests-release:
+  stage: test
+  script:
+  - rustc --version && cargo --version      # Print version info for debugging
+  - cargo test --all --verbose --release
+  artifacts:
     paths:
     - image.ray_not_black.png
     - lib.png_test.png
-    - lib.png_test2.png
+    - lib.png_test_2.png
+    - lib.sparse_png_test.png
 
-test:example-dawn:
+unit-tests-debug:
+  stage: test
+  script:
+  - rustc --version && cargo --version      # Print version info for debugging
+  - cargo test --all --verbose
+
+example-dawn:
+  stage: test
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo run --example dawn --release
   artifacts:
     paths:
     - dawn.png
-test:example-laser-rainbow:
+
+example-laser-rainbow:
+  stage: test
   script:
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo run --example laser-rainbow --release
   artifacts:
     paths:
     - laser-rainbow.png
+
+image-compression:
+  stage: image
+  script: "mkdir image; for i in *.png; do optipng $i -out image/$i ; done"
+
+image-thumbnailing:
+  stage: image
+  script: "mkdir image; for i in *.png; do convert $i -resize 1680x720 image/${i%.*}.jpg ; done"
+  artifacts:
+    paths:
+    - image/

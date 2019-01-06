@@ -208,4 +208,56 @@ mod tests {
         let mut writer = encoder.write_header().unwrap();
         writer.write_image_data(&data).unwrap(); // Save
     }
+
+    #[test]
+    fn sparse_png_test() {
+        let width: f64 = 10240.0;
+        let height: f64 = 10240.0;
+        let rays = 10_000;
+
+        let m = Box::new(HQZLegacy::default());
+
+        let o = Object::Line {
+            x0: Sample::Constant(0.0),
+            y0: Sample::Constant(height * 0.75),
+            dx: Sample::Constant(width),
+            dy: Sample::Constant(0.0),
+            material: m,
+        };
+
+        let l = Light {
+            power: Sample::Constant(1.0),
+            x: Sample::Constant(width / 2.0),
+            y: Sample::Constant(height / 2.0),
+            polar_angle: Sample::Constant(0.0),
+            polar_distance: Sample::Constant(0.0),
+            ray_angle: Sample::Range(360.0, 0.0),
+            wavelength: Sample::Blackbody(6900.0),
+        };
+
+        let viewport = Rect::from_points(
+            &Point { x: 0.0, y: 0.0 },
+            &Point {
+                x: width,
+                y: height,
+            },
+        );
+
+        let r = Scene::new(width as usize, height as usize, viewport)
+            .with_light(l)
+            .with_object(o);
+        let image = r.render(rays);
+
+        let data = image.to_rgb8(0.5, 0.5);
+        //let data = image.dumb_to_rgb8();
+
+        let path = Path::new(r"lib.sparse_png_test.png");
+        let file = File::create(path).unwrap();
+        let ref mut w = BufWriter::new(file);
+
+        let mut encoder = png::Encoder::new(w, width as u32, height as u32);
+        encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
+        let mut writer = encoder.write_header().unwrap();
+        writer.write_image_data(&data).unwrap(); // Save
+    }
 }
