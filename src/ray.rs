@@ -4,6 +4,7 @@ use prng::PRNG;
 use scene::Light;
 use std::f64::consts::PI;
 
+#[derive(Copy, Clone)]
 pub struct Ray {
     origin: Point,
     direction: Vector,
@@ -80,7 +81,7 @@ impl Ray {
                 match self.furthest_aabb(viewport) {
                     None => { return (None, None); },
                     Some(p) => p,
-                } //.expect(&format!("Ray ({},{}) ({},{}) exists outside of Viewport", self.origin.x, self.origin.y, self.direction.x, self.direction.y)),
+                }
             Some(p) => p, //this is the closest point we hit!
         };
 
