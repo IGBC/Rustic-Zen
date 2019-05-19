@@ -73,6 +73,7 @@ mod material;
 mod object;
 mod sampler;
 mod scene;
+mod plumbing;
 
 /// This prelude contains everything to quickstart using Rustic Zen.
 pub mod prelude {

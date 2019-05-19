@@ -4,6 +4,9 @@ use object::Object;
 use prng::PRNG;
 use ray::Ray;
 use sampler::Sample;
+use std::thread;
+use std::sync::{mpsc};
+use plumbing::{CompleteRay, HitData};
 
 /// Data only struct which defines a Light Source
 ///
@@ -101,9 +104,9 @@ impl Scene {
         let l = self.choose_light(rng);
         let mut ray = Some(Ray::new(l, rng));
         while ray.is_some() {
-            ray = ray
-                .unwrap()
-                .collision_list(&self.objects, self.viewport, img, rng);
+            let r2 = ray.unwrap();
+            let (r, hit) = r2.collision_list(&self.objects, self.viewport, rng);
+
         }
     }
 
@@ -112,10 +115,47 @@ impl Scene {
     /// Naturally this call is very expensive. It also consumes the Renderer
     /// and returns an Image class containing the rendered image data.
     pub fn render(self, rays: usize) -> Image {
-        let mut rng = PRNG::seed(self.seed);
+        let (dispatch_tx, dispatch_rx) = mpsc::channel::<Ray>();
+        let (rasterise_tx, rasterise_rx) = mpsc::channel::<CompleteRay>();
+        let (shader_tx, shader_rx) = mpsc::channel::<HitData>();
         let mut image = Image::new(self.resolution_x, self.resolution_y, self.total_light_power);
-        for _i in 0..rays {
-            self.trace_ray(&mut image, &mut rng);
+
+        thread::spawn(move || {
+            let tx = dispatch_tx.clone(); 
+            let mut rng = PRNG::seed(self.seed);
+            for _i in 0..rays {
+                let l = self.choose_light(&mut rng);
+                let mut ray = Ray::new(l, &mut rng);
+                tx.send(ray).unwrap();
+            }
+        });
+
+        thread::spawn(move || {
+            let mut rng = PRNG::seed(self.seed);
+            let thread_tx = dispatch_tx.clone();
+            for ray in dispatch_rx {
+                let (r, hit) = ray.collision_list(&self.objects, self.viewport, &mut rng);
+                match hit {
+                    Some(h) => {
+                        rasterise_tx.send(CompleteRay {
+                            start: ray.get_origin().clone(),
+                            end: h,
+                            wavelength: ray.get_wavelength(),
+                        }).unwrap();
+                    },
+                    None => {},
+                };
+                match r {
+                    Some(r) => {
+                        thread_tx.send(r).unwrap();
+                    },
+                    None => {}
+                }
+            }
+        });
+
+        for comp_ray in rasterise_rx {
+            image.draw_line(comp_ray.wavelength, comp_ray.start.x, comp_ray.start.y, comp_ray.end.x, comp_ray.end.y);
         }
 
         // return rendered image.

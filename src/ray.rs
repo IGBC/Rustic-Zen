@@ -1,5 +1,4 @@
 use geom::{Point, Rect, Vector};
-use image::Image;
 use object::Object;
 use prng::PRNG;
 use scene::Light;
@@ -46,13 +45,16 @@ impl Ray {
         return &self.origin;
     }
 
+    pub fn get_wavelength(&self) -> f64 {
+        return self.wavelength;
+    }
+
     pub fn collision_list(
         &self,
         obj_list: &Vec<Object>,
         viewport: Rect,
-        image: &mut Image,
         rng: &mut PRNG,
-    ) -> Option<Self> {
+    ) -> (Option<Self>, Option<Point>) {
         // get closest Collision
         // Mercifully O(N)
         let mut c_distance = std::f64::MAX;
@@ -76,19 +78,17 @@ impl Ray {
         let end = match c_hit {
             None =>  // We hit nothing, we need to test on the viewport!
                 match self.furthest_aabb(viewport) {
-                    None => { return None; },
+                    None => { return (None, None); },
                     Some(p) => p,
                 } //.expect(&format!("Ray ({},{}) ({},{}) exists outside of Viewport", self.origin.x, self.origin.y, self.direction.x, self.direction.y)),
             Some(p) => p, //this is the closest point we hit!
         };
 
-        image.draw_line(self.wavelength, self.origin.x, self.origin.y, end.x, end.y);
-
         // if we have bounces left Return the result else None.
         if self.bounces > 1 {
-            c_res
+            (c_res, Some(end))
         } else {
-            None
+            (None, Some(end))
         }
     }
 
