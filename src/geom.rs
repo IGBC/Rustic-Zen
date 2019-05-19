@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
-use std::ops::{Add, Neg, Sub};
+use std::ops::{Add, Neg, Sub, Mul};
+use std::option::Option;
 
 #[derive(PartialOrd, PartialEq, Copy, Clone, Debug)]
 pub struct Point {
@@ -13,6 +14,13 @@ pub struct Vector {
     pub x: f64,
     pub y: f64,
 }
+
+#[derive(Copy, Clone, Debug)]
+pub struct Matrix {
+    pub a1: f64, pub b1: f64,
+    pub a2: f64, pub b2: f64,
+}
+
 
 #[derive(PartialOrd, PartialEq, Copy, Clone, Debug)]
 pub struct Rect {
@@ -28,6 +36,88 @@ impl Neg for Vector {
             y: -self.y,
         }
     }
+}
+
+impl Sub<Matrix> for Matrix {
+    type Output = Matrix;
+    fn sub(self, rhs: Matrix) -> Matrix {
+        Matrix {
+            a1: self.a1 - rhs.a1,
+            a2: self.a2 - rhs.a2,
+            b1: self.b1 - rhs.b1,
+            b2: self.b2 - rhs.b2,
+        }
+    }
+}
+
+impl Add<Matrix> for Matrix {
+    type Output = Matrix;
+    fn add(self, rhs: Matrix) -> Matrix {
+        Matrix {
+            a1: self.a1 + rhs.a1,
+            a2: self.a2 + rhs.a2,
+            b1: self.b1 + rhs.b1,
+            b2: self.b2 + rhs.b2,
+        }
+    }
+}
+
+impl Mul<Matrix> for Matrix {
+    type Output = Matrix;
+    fn mul(self, rhs: Matrix) -> Matrix {
+        Matrix {
+            a1: (self.a1 * rhs.a1) + (self.b1 * rhs.a2),
+            a2: (self.a2 * rhs.a1) + (self.b2 * rhs.a2),
+            b1: (self.a1 * rhs.b1) + (self.b1 * rhs.b2),
+            b2: (self.a2 * rhs.b1) + (self.b2 * rhs.b2),
+        }
+    }
+}
+
+impl Mul<f64> for Matrix {
+    type Output = Matrix;
+    fn mul(self, rhs: f64) -> Matrix {
+        Matrix {
+            a1: self.a1 * rhs,
+            a2: self.a2 * rhs,
+            b1: self.b1 * rhs,
+            b2: self.b2 * rhs,
+        }
+    }
+}
+
+impl Mul<Point> for Matrix {
+    type Output = Point;
+    fn mul(self, rhs: Point) -> Point {
+        Point {
+            x: (self.a1 * rhs.x) + (self.b1 * rhs.y), 
+            y: (self.a2 * rhs.x) + (self.b2 * rhs.y),
+        }
+    }
+}
+
+impl Mul<Vector> for Matrix {
+    type Output = Vector;
+    fn mul(self, rhs: Vector) -> Vector {
+        Vector {
+            x: (self.a1 * rhs.x) + (self.b1 * rhs.y), 
+            y: (self.a2 * rhs.x) + (self.b2 * rhs.y),
+        }
+    }
+}
+
+impl Matrix {
+    pub fn inverse(self) -> Option<Matrix> {
+        let det = (self.a1 * self.b2) - (self.b1 * self.a2);
+        if det == 0.0 {
+            None
+        } else {
+            Some(Matrix {
+                a1: self.b2, b1: -self.b1,
+                a2: -self.a2, b2: self.a1,
+            } * (1.0/det))
+        }
+    } 
 }
 
 impl Sub<Vector> for Point {

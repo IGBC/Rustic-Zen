@@ -1,4 +1,4 @@
-use geom::{Point, Rect, Vector};
+use geom::{Point, Rect, Vector, Matrix};
 use image::Image;
 use object::Object;
 use prng::PRNG;
@@ -128,18 +128,33 @@ impl Ray {
     }
 
     fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
-        let slope = self.direction.y / self.direction.x;
-        let alpha =
-            ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 || alpha > 1.0 {
-            return None;
+        let mat_a = Matrix {
+            a1: sd.x - s1.x, b1: self.origin.x - self.direction.x,
+            a2: sd.y - s1.y, b2: self.origin.y - self.direction.y,
+        };
+
+        let omega = self.origin - s1;
+        
+        let result = mat_a.inverse().unwrap() * omega;
+        if (result.x >= 0.0) && (result.x <= 1.0) && (result.y > 0.0) {
+            Some(result.y)
+        } else {
+            None
         }
 
-        let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
-        if distance < 0.0 {
-            return None;
-        }
-        return Some(distance);
+
+        // let slope = self.direction.y / self.direction.x;
+        // let alpha =
+        //     ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
+        // if alpha < 0.0 || alpha > 1.0 {
+        //     return None;
+        // }
+
+        // let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
+        // if distance < 0.0 {
+        //     return None;
+        // }
+        // return Some(distance);
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
@@ -294,7 +309,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn furthest_aabb_hits_vertical() {
         let mut rng = PRNG::seed(0);
 
@@ -323,8 +337,8 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
         println!("result: ({},{})", result.x, result.y);
-        assert_eq!(result.x, 0.0);
-        assert_eq!(result.y, 11.0);
+        assert_eq!(result.x.round(), 0.0);
+        assert_eq!(result.y.round(), 11.0);
     }
 
     #[test]

@@ -35,16 +35,8 @@ fn main() {
         wavelength: Sample::Blackbody(4500.0),
     };
 
-    let viewport = Rect::from_points(
-        &Point { x: 0.0, y: 0.0 },
-        &Point {
-            x: width,
-            y: height,
-        },
-    );
-
     println!("Tracing Rays!");
-    let r = Scene::new(width as usize, height as usize, viewport)
+    let r = Scene::new(width as usize, height as usize)
         .with_object(o)
         .with_light(l);
     let image = r.render(rays);

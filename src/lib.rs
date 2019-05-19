@@ -76,7 +76,7 @@ mod scene;
 
 /// This prelude contains everything to quickstart using Rustic Zen.
 pub mod prelude {
-    pub use geom::{Point, Rect};
+    pub use geom::{Point};
     pub use material::{HQZLegacy, Material};
     pub use object::Object;
     pub use sampler::Sample;
@@ -115,8 +115,6 @@ mod tests {
     use scene::Light;
     use scene::Scene;
 
-    use geom::{Point, Rect};
-
     use material::HQZLegacy;
 
     #[test]
@@ -134,14 +132,7 @@ mod tests {
             wavelength: Sample::Blackbody(6900.0),
         };
 
-        let viewport = Rect::from_points(
-            &Point { x: 0.0, y: 0.0 },
-            &Point {
-                x: width,
-                y: height,
-            },
-        );
-        let r = Scene::new(width as usize, height as usize, viewport).with_light(l);
+        let r = Scene::new(width as usize, height as usize).with_light(l);
         let image = r.render(10_000);
 
         let data = image.to_rgb8(0.5, 0.5);
@@ -183,15 +174,7 @@ mod tests {
             wavelength: Sample::Blackbody(6900.0),
         };
 
-        let viewport = Rect::from_points(
-            &Point { x: 0.0, y: 0.0 },
-            &Point {
-                x: width,
-                y: height,
-            },
-        );
-
-        let r = Scene::new(width as usize, height as usize, viewport)
+        let r = Scene::new(width as usize, height as usize)
             .with_light(l)
             .with_object(o);
         let image = r.render(rays);
@@ -235,15 +218,7 @@ mod tests {
             wavelength: Sample::Blackbody(6900.0),
         };
 
-        let viewport = Rect::from_points(
-            &Point { x: 0.0, y: 0.0 },
-            &Point {
-                x: width,
-                y: height,
-            },
-        );
-
-        let r = Scene::new(width as usize, height as usize, viewport)
+        let r = Scene::new(width as usize, height as usize)
             .with_light(l)
             .with_object(o);
         let image = r.render(rays);
