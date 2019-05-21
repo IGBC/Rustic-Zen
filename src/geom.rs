@@ -533,34 +533,34 @@ mod tests {
     #[test]
     fn matrix_inverse() {
         let m = Matrix {
-            a1: 1.0, a2: 2.0,
-            b1: 3.0, b2: 4.0, 
+            a1: 1.0, b1: 2.0,
+            a2: 3.0, b2: 4.0, 
         };
         let n = m.inverse().expect("This should have an inverse");
         assert_eq!(n.a1, -2.0);
-        assert_eq!(n.a2, 1.0);
-        assert_eq!(n.b1, 1.5);
+        assert_eq!(n.b1, 1.0);
+        assert_eq!(n.a2, 1.5);
         assert_eq!(n.b2, -0.5);
     }
 
     #[test]
     fn matrix_inverse_identity() {
         let m = Matrix {
-            a1: 1.0, a2: 0.0,
-            b1: 0.0, b2: 1.0, 
+            a1: 1.0, b1: 0.0,
+            a2: 0.0, b2: 1.0, 
         };
         let n = m.inverse().expect("This should have an inverse");
         assert_eq!(n.a1, 1.0);
-        assert_eq!(n.a2, 0.0);
         assert_eq!(n.b1, 0.0);
+        assert_eq!(n.a2, 0.0);
         assert_eq!(n.b2, 1.0);
     }
 
     #[test]
     fn matrix_inverse_singular() {
         let m = Matrix {
-            a1: 0.0, a2: 0.0,
-            b1: 0.0, b2: 0.0, 
+            a1: 0.0, b1: 0.0,
+            a2: 0.0, b2: 0.0, 
         };
         let n = m.inverse();
         if n.is_none() {
