@@ -1,4 +1,4 @@
-use geom::{Point, Rect, Vector};
+use geom::{Point, Rect, Vector, Matrix};
 use image::Image;
 use object::Object;
 use prng::PRNG;
@@ -19,7 +19,7 @@ impl Ray {
     pub fn new(light: &Light, rng: &mut PRNG) -> Self {
         let cart_x = light.x.val(rng);
         let cart_y = light.y.val(rng);
-        let polar_angle = light.polar_angle.val(rng);
+        let polar_angle = light.polar_angle.val(rng) * (PI / 180.0);
         let polar_dist = light.polar_distance.val(rng);
         let origin = Point {
             x: cart_x + f64::cos(polar_angle) * polar_dist,
@@ -127,29 +127,49 @@ impl Ray {
         })
     }
 
-    fn intersect_edge(&self, s1: Point, sd: Point) -> Option<f64> {
-        let slope = self.direction.y / self.direction.x;
-        let alpha =
-            ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 || alpha > 1.0 {
-            return None;
+    fn intersect_edge(&self, s1: Point, sd: Vector) -> Option<f64> {
+        let mat_a = Matrix {
+            a1: sd.x, b1: -self.direction.x,
+            a2: sd.y, b2: -self.direction.y,
+        };
+
+        let omega = self.origin - s1;
+        
+        let result = match mat_a.inverse() {
+            Some(m) => m * omega,
+            None => {
+                return None; // Probably cos rays are parallel
+            }
+        };
+        if (result.x >= 0.0) && (result.x <= 1.0) && (result.y > 0.0) {
+            Some(result.y)
+        } else {
+            None
         }
 
-        let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
-        if distance < 0.0 {
-            return None;
-        }
-        return Some(distance);
+
+        // let slope = self.direction.y / self.direction.x;
+        // let alpha =
+        //     ((s1.x - self.origin.x) * slope + (self.origin.y - s1.y)) / (sd.y - sd.x * slope);
+        // if alpha < 0.0 || alpha > 1.0 {
+        //     return None;
+        // }
+
+        // let distance = (s1.x + sd.x * alpha - self.origin.x) / self.direction.x;
+        // if distance < 0.0 {
+        //     return None;
+        // }
+        // return Some(distance);
     }
 
     pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
         let mut max_dist: Option<f64> = None;
 
-        let horizontal = Point {
+        let horizontal = Vector {
             x: aabb.top_right().x - aabb.top_left().x,
             y: 0.0,
         };
-        let vertical = Point {
+        let vertical = Vector {
             x: 0.0,
             y: aabb.bottom_left().y - aabb.top_left().y,
         };
@@ -252,13 +272,19 @@ mod test {
             power: Sample::Constant(1.0),
             x: Sample::Constant(100.0),
             y: Sample::Constant(100.0),
-            polar_angle: Sample::Range(360.0, 0.0),
+            polar_angle: Sample::Constant(360.0),
             polar_distance: Sample::Constant(1.0),
-            ray_angle: Sample::Range(360.0, 0.0),
-            wavelength: Sample::Blackbody(0.0),
+            ray_angle: Sample::Constant(360.0),
+            wavelength: Sample::Constant(460.0),
         };
 
-        Ray::new(&l, &mut rng);
+        let r = Ray::new(&l, &mut rng);
+        assert_eq!(r.origin.x.round(), 101.0);
+        assert_eq!(r.origin.y.round(), 100.0);
+        assert_eq!(r.direction.x.round(), 1.0);
+        assert_eq!(r.direction.y.round(), 0.0);
+        assert_eq!(r.wavelength.round(), 460.0);
+        assert_eq!(r.bounces, 1000);
     }
 
     #[test]
@@ -287,14 +313,12 @@ mod test {
         let result = ray.furthest_aabb(aabb);
 
         // check hit!
-        assert!(result.is_some());
-        let result = result.unwrap();
+        let result = result.expect("Result should have been Some()");
         assert_eq!(result.x, 11.0);
         assert_eq!(result.y, 0.0);
     }
 
     #[test]
-    #[ignore]
     fn furthest_aabb_hits_vertical() {
         let mut rng = PRNG::seed(0);
 
@@ -320,11 +344,10 @@ mod test {
         let result = ray.furthest_aabb(aabb);
 
         // check hit!
-        assert!(result.is_some());
-        let result = result.unwrap();
+        let result = result.expect("That shouldn't be None!");
         println!("result: ({},{})", result.x, result.y);
-        assert_eq!(result.x, 0.0);
-        assert_eq!(result.y, 11.0);
+        assert_eq!(result.x.round(), 0.0);
+        assert_eq!(result.y.round(), 11.0);
     }
 
     #[test]
@@ -354,7 +377,7 @@ mod test {
 
         // check hit!
         assert!(result.is_some());
-        let result = result.unwrap();
+        let result = result.expect("Something was meant to be there!");
         println!("result: ({},{})", result.x, result.y);
         assert_eq!(result.x.round(), 11.0);
         assert_eq!(result.y.round(), 11.0);
@@ -389,8 +412,7 @@ mod test {
         let result = ray.furthest_aabb(aabb);
 
         // check hit!
-        assert!(result.is_some());
-        let result = result.unwrap();
+        let result = result.expect("None is not what we wanted");
         println!("result: {:?}", result);
         assert_eq!(result.x.round(), 200.0);
         assert_eq!(result.y.round(), 600.0);

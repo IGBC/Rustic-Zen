@@ -71,16 +71,8 @@ fn main() {
         material: Box::new(floor_m.clone()),
     };
 
-    let viewport = Rect::from_points(
-        &Point { x: 0.0, y: 0.0 },
-        &Point {
-            x: width + 1.0,
-            y: height + 1.0,
-        },
-    );
-
     println!("Tracing Rays!");
-    let r = Scene::new(width as usize, height as usize, viewport)
+    let r = Scene::new(width as usize, height as usize)
         .with_light(laser(30.0, 694.0))
         .with_light(laser(31.0, 676.0))
         .with_light(laser(32.0, 647.0))
