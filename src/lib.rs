@@ -193,7 +193,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn sparse_png_test() {
         let width: f64 = 10240.0;
         let height: f64 = 10240.0;
