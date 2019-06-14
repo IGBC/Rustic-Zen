@@ -1,9 +1,10 @@
 //! This module provides rustic-zen's sampler implementation, which
 //! is needed for instanciating lights and objects.
 
-use prng::PRNG;
+use pcg_rand::Pcg64Fast;
 use spectrum::blackbody_wavelength;
 use std::f64;
+use rand::Rng;
 
 #[derive(Clone, Copy, Debug)]
 /// Samples a stochastically sampled value, which may be:
@@ -27,11 +28,11 @@ pub enum Sample {
 
 impl Sample {
     /// Returns next value of this sampler
-    pub fn val(&self, sampler: &mut PRNG) -> f64 {
+    pub fn val(&self, sampler: &mut Pcg64Fast) -> f64 {
         match self {
             Sample::Constant(i) => i.clone(),
-            Sample::Blackbody(k) => blackbody_wavelength(k.clone(), sampler.uniform_f64()),
-            Sample::Range(l, u) => sampler.uniform_range(l.clone(), u.clone()),
+            Sample::Blackbody(k) => blackbody_wavelength(k.clone(), sampler.gen_range(0.0f64, 1.0f64)),
+            Sample::Range(l, u) => sampler.gen_range(u, l),
         }
     }
 
@@ -59,7 +60,7 @@ impl Sample {
 #[cfg(test)]
 mod tests {
     use super::Sample;
-    use prng::PRNG;
+    use pcg_rand::Pcg64Fast;
 
     use rand::prelude::*;
 
@@ -93,7 +94,7 @@ mod tests {
 
     #[test]
     fn val_const() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let mut stdrng = rand::thread_rng();
         let f: f64 = stdrng.gen();
@@ -107,7 +108,7 @@ mod tests {
 
     #[test]
     fn val_range() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let mut stdrng = rand::thread_rng();
         let mut f1: f64 = stdrng.gen();
@@ -129,7 +130,7 @@ mod tests {
 
     #[test]
     fn blackbody_works() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
         // Get a sampled value from the range of valid wavelenghts
         let w = Sample::Range(780.0, 360.0);
 
@@ -142,7 +143,7 @@ mod tests {
 
     #[test]
     fn blackbody_white_light() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
         let s = Sample::Blackbody(0.0);
         // Check s can be sampled without panicing
         s.val(&mut rng);

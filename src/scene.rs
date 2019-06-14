@@ -1,9 +1,11 @@
 use geom::{Point, Rect};
 use image::Image;
 use object::Object;
-use prng::PRNG;
 use ray::Ray;
 use sampler::Sample;
+use pcg_rand::Pcg64Fast;
+use rand::prelude::*;
+use pcg_rand::seeds::PcgSeeder;
 
 /// Data only struct which defines a Light Source
 ///
@@ -44,7 +46,7 @@ pub struct Light {
 pub struct Scene {
     lights: Vec<Light>,
     objects: Vec<Object>,
-    seed: u32, //current seed
+    seed: u128, //current seed
     total_light_power: f64,
     resolution_x: usize,
     resolution_y: usize,
@@ -79,12 +81,12 @@ impl Scene {
     }
 
     /// Sets the seed for the scene random number generator - Chainable varient
-    pub fn with_seed(mut self, seed: u32) -> Self {
+    pub fn with_seed(mut self, seed: u128) -> Self {
         self.seed = seed;
         self
     }
 
-    fn choose_light(&self, rng: &mut PRNG) -> &Light {
+    fn choose_light(&self, rng: &mut Pcg64Fast) -> &Light {
         let sample = Sample::Range(self.total_light_power, 0.0);
         let threshold = sample.val(rng);
         let mut sum: f64 = 0.0;
@@ -97,13 +99,13 @@ impl Scene {
         return self.lights.last().expect("Scene has no lights");
     }
 
-    fn trace_ray(&self, img: &mut Image, rng: &mut PRNG) {
+    fn trace_ray(&self, img: &mut Image, rng: &mut Pcg64Fast) {
         let l = self.choose_light(rng);
         let mut ray = Some(Ray::new(l, rng));
         while ray.is_some() {
             ray = ray
                 .unwrap()
-                .collision_list(&self.objects, self.viewport, img, rng);
+                .collision_list(&self.objects, self.viewport, img);
         }
     }
 
@@ -112,7 +114,7 @@ impl Scene {
     /// Naturally this call is very expensive. It also consumes the Renderer
     /// and returns an Image class containing the rendered image data.
     pub fn render(self, rays: usize) -> Image {
-        let mut rng = PRNG::seed(self.seed);
+        let mut rng = Pcg64Fast::from_seed(PcgSeeder::seed(self.seed));
         let mut image = Image::new(self.resolution_x, self.resolution_y, self.total_light_power);
         for _i in 0..rays {
             self.trace_ray(&mut image, &mut rng);

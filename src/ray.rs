@@ -1,22 +1,25 @@
 use geom::{Point, Rect, Vector, Matrix};
 use image::Image;
 use object::Object;
-use prng::PRNG;
+use pcg_rand::{Pcg64Fast};
 use scene::Light;
 use std::f64::consts::PI;
+use rand::prelude::*;
+use pcg_rand::seeds::PcgSeeder;
 
 pub struct Ray {
     origin: Point,
     direction: Vector,
     wavelength: f64,
     bounces: u32,
+    ray_rng: Pcg64Fast,
 }
 
 impl Ray {
     /**
      * Creates new ray from light source, sampling the light apropriately.
      */
-    pub fn new(light: &Light, rng: &mut PRNG) -> Self {
+    pub fn new(light: &Light, rng: &mut Pcg64Fast) -> Self {
         let cart_x = light.x.val(rng);
         let cart_y = light.y.val(rng);
         let polar_angle = light.polar_angle.val(rng);
@@ -39,6 +42,7 @@ impl Ray {
             direction,
             wavelength,
             bounces: 1000,
+            ray_rng: Pcg64Fast::from_seed(PcgSeeder::seed(rng.gen())),
         }
     }
 
@@ -47,11 +51,10 @@ impl Ray {
     }
 
     pub fn collision_list(
-        &self,
+        &mut self,
         obj_list: &Vec<Object>,
         viewport: Rect,
         image: &mut Image,
-        rng: &mut PRNG,
     ) -> Option<Self> {
         // get closest Collision
         // Mercifully O(N)
@@ -59,7 +62,7 @@ impl Ray {
         let mut c_hit: Option<Point> = None;
         let mut c_res: Option<Self> = None;
         for i in obj_list.iter() {
-            let result = self.bounce(i, rng);
+            let result = self.bounce(i);
             match result {
                 None => {}
                 Some(i) => {
@@ -97,9 +100,9 @@ impl Ray {
      * returns none if it does not actually hit the object.
      * Objects are sampled so two identical rays may not have the same outcome.
      */
-    pub fn bounce(&self, obj: &Object, rng: &mut PRNG) -> Option<Self> {
+    pub fn bounce(&mut self, obj: &Object) -> Option<Self> {
         // Todo get actual ray start. And do an actual collision test
-        let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, rng) {
+        let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, &mut self.ray_rng) {
             None => return None,
             Some((hit, normal, alpha)) => (hit, normal, alpha),
         };
@@ -111,7 +114,7 @@ impl Ray {
         }
 
         let mat = obj.get_material();
-        let outcome = mat.outcome(&self.direction, &normal, self.wavelength, alpha, rng);
+        let outcome = mat.outcome(&self.direction, &normal, self.wavelength, alpha, &mut self.ray_rng);
         let direction = match outcome {
             Some(o) => o,
             None => {
@@ -124,6 +127,7 @@ impl Ray {
             direction,
             wavelength: self.wavelength,
             bounces: self.bounces - 1,
+            ray_rng: Pcg64Fast::from_seed(PcgSeeder::seed(self.ray_rng.gen())),
         })
     }
 
@@ -255,9 +259,10 @@ impl Ray {
 mod test {
     use super::Ray;
     use geom::{Point, Rect};
-    use prng::PRNG;
     use sampler::Sample;
     use scene::Light;
+    use rand::prelude::*;
+    use pcg_rand::Pcg64Fast;
 
     fn old_hit(ray: Ray, s1: Point, sd: Point) -> Option<f64> {
         let slope = ray.direction.y / ray.direction.x;
@@ -300,7 +305,7 @@ mod test {
 
     #[test]
     fn new_works() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let l = Light {
             power: Sample::Constant(1.0),
@@ -317,7 +322,7 @@ mod test {
 
     #[test]
     fn furthest_aabb_hits_horziontal() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let x_plus_light = Light {
             power: Sample::Constant(1.0),
@@ -348,7 +353,7 @@ mod test {
 
     #[test]
     fn furthest_aabb_hits_vertical() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let x_plus_light = Light {
             power: Sample::Constant(1.0),
@@ -380,7 +385,7 @@ mod test {
 
     #[test]
     fn furthest_aabb_hits_almost_vertical() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let x_plus_light = Light {
             power: Sample::Constant(1.0),
@@ -413,7 +418,7 @@ mod test {
 
     #[test]
     fn furthest_aabb_special_case() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let x_plus_light = Light {
             power: Sample::Constant(1.0),

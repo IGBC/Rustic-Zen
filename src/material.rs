@@ -1,6 +1,7 @@
 use geom::Vector;
-use prng::PRNG;
+use pcg_rand::Pcg64Fast;
 use std::f64::consts::PI;
+use rand::prelude::*;
 
 /// Shader Trait
 ///
@@ -33,7 +34,7 @@ pub trait Material {
         normal: &Vector,
         wavelength: f64,
         alpha: f64,
-        rng: &mut PRNG,
+        rng: &mut Pcg64Fast,
     ) -> Option<Vector>;
 }
 
@@ -82,12 +83,12 @@ impl Material for HQZLegacy {
         normal: &Vector,
         _wavelength: f64,
         _alpha: f64,
-        rng: &mut PRNG,
+        rng: &mut Pcg64Fast,
     ) -> Option<Vector> {
-        let f = rng.uniform_f64();
+        let f: f64 = rng.gen_range(0.0,1.0);
 
         if f <= self.d {
-            let angle = rng.uniform_range(2.0 * PI, 0.0);
+            let angle = rng.gen_range(2.0 * PI, 0.0);
             return Some(Vector {
                 x: f64::cos(angle),
                 y: f64::sin(angle),

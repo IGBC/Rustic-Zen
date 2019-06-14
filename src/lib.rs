@@ -64,7 +64,7 @@
 
 #[cfg(test)]
 extern crate png;
-#[cfg(test)]
+extern crate pcg_rand;
 extern crate rand;
 
 pub mod geom;
@@ -91,7 +91,6 @@ pub use scene::{Light, Scene};
 pub use image::Image;
 
 mod image;
-mod prng;
 mod ray;
 mod spectrum;
 

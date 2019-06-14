@@ -1,4 +1,3 @@
-use prng::PRNG;
 use spectrum::wavelength_to_colour;
 use std::mem::swap;
 
