@@ -283,8 +283,8 @@ mod test {
             y: Sample::Constant(100.0),
             polar_angle: Sample::Constant(360.0),
             polar_distance: Sample::Constant(1.0),
-            ray_angle: Sample::Range(360.0, 0.0),
-            wavelength: Sample::Blackbody(3600.0),
+            ray_angle: Sample::Constant(0.0),
+            wavelength: Sample::Constant(460.0),
         };
 
         let r = Ray::new(&l, &mut rng);
