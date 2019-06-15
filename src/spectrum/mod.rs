@@ -13,6 +13,10 @@ pub fn wavelength_to_colour(nm: f64) -> (f64, f64, f64) {
         return (8192.0, 8192.0, 8192.0);
     }
 
+    if !nm.is_normal() {
+        panic!("nm (= {:?}) is not normal", nm);
+    }
+
     // Case: Light outside of visible spectrum
     if nm < FIRST_WAVELENGTH || nm > LAST_WAVELENGTH {
         return (0.0, 0.0, 0.0);
@@ -43,7 +47,10 @@ pub fn blackbody_wavelength(temp: f64, noise: f64) -> f64 {
     let upper: f64 = BLACKBODY_CDF_DATA[index];
 
     // Linear interpolation
-    let lerp: f64 = index as f64 + (noise - lower) / (upper - lower);
+    let mut lerp: f64 = index as f64 + (noise - lower) / (upper - lower);
+    if lerp.is_nan() {
+        lerp = 0.0;
+    }
 
     // Scale to 'temperature' using Wein's displacement law
     return lerp * (BLACKBODY_CDF_TEMP / temp);

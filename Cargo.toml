@@ -9,6 +9,10 @@ keywords = ["zen", "photon", "garden", "HQZ", "raytracer"]
 catagories = ["multimedia::images", "rendering"]
 authors = ["SEGFAULT <fakespamtrap@gmail.com>"]
 
-[dev-dependencies]
+[dependencies]
+pcg_rand = "0.10.1"
 rand = "0.6.1"
+
+[dev-dependencies]
 png = "0.13.2"
+rand = "0.6.1"

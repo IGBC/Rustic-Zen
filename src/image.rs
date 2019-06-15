@@ -1,6 +1,8 @@
-use prng::PRNG;
 use spectrum::wavelength_to_colour;
 use std::mem::swap;
+use pcg_rand::Pcg64Fast;
+use pcg_rand::seeds::PcgSeeder;
+use rand::prelude::*;
 
 /// Represents an image while ray rendering is happening
 /// 
@@ -205,26 +207,26 @@ impl Image {
     /// gamma is passed in the form of an exponent which is defined as `1.0 / gamma`
     pub fn to_rgb8(&self, exposure: f64, exponent: f64) -> Vec<u8> {
         let scale = self.calculate_scale(exposure);
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_seed(PcgSeeder::seed(0));
         let mut rgb: Vec<u8> = Vec::new();
         for i in self.pixels.iter() {
             // red
             let u: f64 = Self::max(0.0, i.0.clone() as f64 * scale);
-            let dither = rng.uniform_f64();
+            let dither = rng.gen_range(0.0f64, 1.0f64);
             let v: f64 = 255.0 * u.powf(exponent) + dither;
             let r8 = Self::max(0.0, Self::min(255.9, v));
             rgb.push(r8 as u8);
 
             // green
             let u: f64 = Self::max(0.0, i.1.clone() as f64 * scale);
-            let dither = rng.uniform_f64();
+            let dither = rng.gen_range(0.0f64, 1.0f64);
             let v: f64 = 255.0 * u.powf(exponent) + dither;
             let g8 = Self::max(0.0, Self::min(255.9, v));
             rgb.push(g8 as u8);
 
             // blue
             let u: f64 = Self::max(0.0, i.2.clone() as f64 * scale);
-            let dither = rng.uniform_f64();
+            let dither = rng.gen_range(0.0f64, 1.0f64);
             let v: f64 = 255.0 * u.powf(exponent) + dither;
             let b8 = Self::max(0.0, Self::min(255.9, v));
             rgb.push(b8 as u8);

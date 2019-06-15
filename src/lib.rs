@@ -16,7 +16,7 @@
 //!     // Set up constants.
 //!     let width: f64 = 1920.0;
 //!     let height: f64 = 1080.0;
-//!     let rays = 100_000;
+//!     let rays = 10_000;
 //!     // This would be better but these doctests have to run in reasonable time
 //!     // let rays = ((width * height).round() / 2.0) as usize;
 //!
@@ -61,7 +61,7 @@
 
 #[cfg(test)]
 extern crate png;
-#[cfg(test)]
+extern crate pcg_rand;
 extern crate rand;
 
 pub mod geom;
@@ -88,7 +88,6 @@ pub use scene::{Light, Scene};
 pub use image::Image;
 
 mod image;
-mod prng;
 mod ray;
 mod spectrum;
 
