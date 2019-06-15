@@ -37,12 +37,16 @@ impl Ray {
         // Set Colour
         let wavelength = light.wavelength.val(rng);
         // wrap in an object
+        let mut pcg = Pcg64Fast::from_seed(PcgSeeder::seed(rng.gen()));
+        // PCG's act weird when you initialise them so we're gonna throw away the first value
+        pcg.gen::<f64>();
+        pcg.gen::<f64>();
         Ray {
             origin,
             direction,
             wavelength,
             bounces: 1000,
-            ray_rng: Pcg64Fast::from_seed(PcgSeeder::seed(rng.gen())),
+            ray_rng: pcg,
         }
     }
 
@@ -139,7 +143,10 @@ impl Ray {
 
         let omega = self.origin - s1;
         
-        let result = mat_a.inverse().expect("Matrix has no determinant") * omega;
+        let result = match mat_a.inverse() {
+            Some(r) => r * omega,
+            None => {return None},
+        };
         if (result.x >= 0.0) && (result.x <= 1.0) && (result.y > 0.0) {
             Some(result.y)
         } else {
@@ -314,7 +321,7 @@ mod test {
             polar_angle: Sample::Range(360.0, 0.0),
             polar_distance: Sample::Constant(1.0),
             ray_angle: Sample::Range(360.0, 0.0),
-            wavelength: Sample::Blackbody(0.0),
+            wavelength: Sample::Blackbody(3600.0),
         };
 
         Ray::new(&l, &mut rng);
@@ -328,10 +335,10 @@ mod test {
             power: Sample::Constant(1.0),
             x: Sample::Constant(0.0),
             y: Sample::Constant(0.0),
-            polar_angle: Sample::Range(0.0, 0.0),
+            polar_angle: Sample::Constant(0.0),
             polar_distance: Sample::Constant(0.0),
             // x = cos(0) = 1; y = sin(0) = 0
-            ray_angle: Sample::Range(0.0, 0.0),
+            ray_angle: Sample::Constant(0.0),
             wavelength: Sample::Blackbody(5800.0),
         };
 

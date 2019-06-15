@@ -16,7 +16,7 @@
 //!     // Set up constants.
 //!     let width: f64 = 3440.0;
 //!     let height: f64 = 1440.0;
-//!     let rays = 100_000;
+//!     let rays = 10_000;
 //!     // This would be better but these doctests have to run in reasonable time
 //!     // let rays = ((width * height).round() / 2.0) as usize;
 //!
@@ -43,11 +43,8 @@
 //!         wavelength: Sample::Blackbody(4500.0),
 //!     };
 //!
-//!     // We also need a viewport
-//!     let viewport = Rect::from_points(&Point{x: 0.0,y: 0.0},&Point{x: width,y: height});
-//!
 //!     // Construct a renderer object and add the light and object to it.
-//!     let s = Scene::new(width as usize, height as usize, viewport).with_object(o).with_light(l);
+//!     let s = Scene::new(width as usize, height as usize).with_object(o).with_light(l);
 //!     // Render Image
 //!     println!("Tracing Rays");
 //!     let image = s.render(rays);

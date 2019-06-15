@@ -88,7 +88,7 @@ impl Material for HQZLegacy {
         let f: f64 = rng.gen_range(0.0,1.0);
 
         if f <= self.d {
-            let angle = rng.gen_range(2.0 * PI, 0.0);
+            let angle = rng.gen_range(0.0, 2.0 * PI);
             return Some(Vector {
                 x: f64::cos(angle),
                 y: f64::sin(angle),

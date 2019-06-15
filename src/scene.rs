@@ -57,7 +57,8 @@ impl Scene {
     /// Creates new Renderer ready for defining a scene.
     pub fn new(resolution_x: usize, resolution_y: usize) -> Self {
         Self {
-            seed: 0,
+            // 128 bit numbers are getting a bit too long even in hex
+            seed: 0xDEADBEEF00000000F00DBABE00000000, //It just can't be 0
             lights: vec![],
             objects: vec![],
             viewport: Rect::from_points(&Point{ x: 0.0, y: 0.0 }, &Point { x: resolution_x as f64, y: resolution_y as f64 }),
@@ -82,6 +83,9 @@ impl Scene {
 
     /// Sets the seed for the scene random number generator - Chainable varient
     pub fn with_seed(mut self, seed: u128) -> Self {
+        if seed == 0 {
+            panic!("Sorry a seed of 0 causes a PCG failure, please try something else");
+        }
         self.seed = seed;
         self
     }
