@@ -14,8 +14,8 @@
 //!
 //! fn main() {
 //!     // Set up constants.
-//!     let width: f64 = 3440.0;
-//!     let height: f64 = 1440.0;
+//!     let width: f64 = 1920.0;
+//!     let height: f64 = 1080.0;
 //!     let rays = 10_000;
 //!     // This would be better but these doctests have to run in reasonable time
 //!     // let rays = ((width * height).round() / 2.0) as usize;
@@ -183,51 +183,6 @@ mod tests {
         let ref mut w = BufWriter::new(file);
 
         let mut encoder = png::Encoder::new(w, 1024, 1024);
-        encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
-        let mut writer = encoder.write_header().unwrap();
-        writer.write_image_data(&data).unwrap(); // Save
-    }
-
-    #[test]
-    #[ignore]
-    fn sparse_png_test() {
-        let width: f64 = 10240.0;
-        let height: f64 = 10240.0;
-        let rays = 10_000;
-
-        let m = Box::new(HQZLegacy::default());
-
-        let o = Object::Line {
-            x0: Sample::Constant(0.0),
-            y0: Sample::Constant(height * 0.75),
-            dx: Sample::Constant(width),
-            dy: Sample::Constant(0.0),
-            material: m,
-        };
-
-        let l = Light {
-            power: Sample::Constant(1.0),
-            x: Sample::Constant(width / 2.0),
-            y: Sample::Constant(height / 2.0),
-            polar_angle: Sample::Constant(0.0),
-            polar_distance: Sample::Constant(0.0),
-            ray_angle: Sample::Range(360.0, 0.0),
-            wavelength: Sample::Blackbody(6900.0),
-        };
-
-        let r = Scene::new(width as usize, height as usize)
-            .with_light(l)
-            .with_object(o);
-        let image = r.render(rays);
-
-        let data = image.to_rgb8(0.5, 0.5);
-        //let data = image.dumb_to_rgb8();
-
-        let path = Path::new(r"lib.sparse_png_test.png");
-        let file = File::create(path).unwrap();
-        let ref mut w = BufWriter::new(file);
-
-        let mut encoder = png::Encoder::new(w, width as u32, height as u32);
         encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
         writer.write_image_data(&data).unwrap(); // Save

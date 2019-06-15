@@ -153,8 +153,10 @@ impl Object {
         let omega = origin.clone() - s1;
         
         let result = match mat_a.inverse() {
-            Some(r) => r * omega,
-            None => {return None},
+            Some(m) => m * omega,
+            None => {
+                return None; // Probably cos rays are parallel
+            }
         };
         if (result.x >= 0.0) && (result.x <= 1.0) && (result.y > 0.0) {
         } else {

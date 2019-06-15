@@ -22,7 +22,7 @@ impl Ray {
     pub fn new(light: &Light, rng: &mut Pcg64Fast) -> Self {
         let cart_x = light.x.val(rng);
         let cart_y = light.y.val(rng);
-        let polar_angle = light.polar_angle.val(rng);
+        let polar_angle = light.polar_angle.val(rng) * (PI / 180.0);
         let polar_dist = light.polar_distance.val(rng);
         let origin = Point {
             x: cart_x + f64::cos(polar_angle) * polar_dist,
@@ -144,8 +144,10 @@ impl Ray {
         let omega = self.origin - s1;
         
         let result = match mat_a.inverse() {
-            Some(r) => r * omega,
-            None => {return None},
+            Some(m) => m * omega,
+            None => {
+                return None; // Probably cos rays are parallel
+            }
         };
         if (result.x >= 0.0) && (result.x <= 1.0) && (result.y > 0.0) {
             Some(result.y)
@@ -279,13 +281,19 @@ mod test {
             power: Sample::Constant(1.0),
             x: Sample::Constant(100.0),
             y: Sample::Constant(100.0),
-            polar_angle: Sample::Range(360.0, 0.0),
+            polar_angle: Sample::Constant(360.0),
             polar_distance: Sample::Constant(1.0),
             ray_angle: Sample::Range(360.0, 0.0),
             wavelength: Sample::Blackbody(3600.0),
         };
 
-        Ray::new(&l, &mut rng);
+        let r = Ray::new(&l, &mut rng);
+        assert_eq!(r.origin.x.round(), 101.0);
+        assert_eq!(r.origin.y.round(), 100.0);
+        assert_eq!(r.direction.x.round(), 1.0);
+        assert_eq!(r.direction.y.round(), 0.0);
+        assert_eq!(r.wavelength.round(), 460.0);
+        assert_eq!(r.bounces, 1000);
     }
 
     #[test]
