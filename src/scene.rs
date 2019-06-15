@@ -164,4 +164,10 @@ mod tests {
             .with_object(obj);
         r.render(100);
     }
+
+    #[test]
+    #[should_panic]
+    fn seed_eq_zero() {
+        let _r = Scene::new(1920, 1080).with_seed(0);
+    }
 }
