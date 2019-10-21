@@ -1,4 +1,4 @@
-use geom::{Point, Rect, Vector};
+use geom::{Point, Rect, Vector, Matrix};
 use prng::PRNG;
 use sampler::Sample;
 use std::f64::consts::PI;
@@ -145,19 +145,26 @@ impl Object {
             ),
         };
 
-        let slope = dir.y / dir.x;
-        let alpha = ((s1.x - origin.x) * slope + (origin.y - s1.y)) / (sd.y - sd.x * slope);
-        if alpha < 0.0 {
-            return None;
-        }
-        if alpha > 1.0 {
-            return None;
-        }
+        let mat_a = Matrix {
+            a1: sd.x, b1: -dir.x,
+            a2: sd.y, b2: -dir.y,
+        };
 
-        let distance = (s1.x + sd.x * alpha - origin.x) / dir.x;
-        if distance < 0.0 {
+        let omega = origin.clone() - s1;
+        
+        let result = match mat_a.inverse() {
+            Some(m) => m * omega,
+            None => {
+                return None; // Probably cos rays are parallel
+            }
+        };
+        if (result.x >= 0.0) && (result.x <= 1.0) && (result.y > 0.0) {
+        } else {
             return None;
-        }
+        };
+
+        let alpha = result.x;
+        let distance = result.y;
 
         let (hit, norm) = match self {
             Object::Line { .. } => (
@@ -216,8 +223,7 @@ mod tests {
 
         let a = obj.get_hit(&origin, &dir, &mut rng);
 
-        assert!(a.is_some());
-        let (a, b, _) = a.unwrap();
+        let (a, b, _) = a.expect("A was not meant to be `None`");
 
         //assert hit is at (5,5)
         assert_eq!(a.x, 5.0);

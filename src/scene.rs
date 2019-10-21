@@ -1,4 +1,4 @@
-use geom::Rect;
+use geom::{Point, Rect};
 use image::Image;
 use object::Object;
 use prng::PRNG;
@@ -56,12 +56,12 @@ pub struct Scene {
 
 impl Scene {
     /// Creates new Renderer ready for defining a scene.
-    pub fn new(resolution_x: usize, resolution_y: usize, viewport: Rect) -> Self {
+    pub fn new(resolution_x: usize, resolution_y: usize) -> Self {
         Self {
             seed: 0,
             lights: vec![],
             objects: vec![],
-            viewport,
+            viewport: Rect::from_points(&Point{ x: 0.0, y: 0.0 }, &Point { x: resolution_x as f64, y: resolution_y as f64 }),
             resolution_x,
             resolution_y,
             total_light_power: 0.0,
@@ -174,7 +174,6 @@ impl Scene {
 #[cfg(test)]
 mod tests {
     use super::Scene;
-    use geom::{Point, Rect};
     use material::HQZLegacy;
     use object::Object;
     use sampler::Sample;
@@ -202,9 +201,7 @@ mod tests {
             wavelength: Sample::Blackbody(5800.0),
         };
 
-        let viewport = Rect::from_points(&Point { x: 0.0, y: 0.0 }, &Point { x: 160.0, y: 90.0 });
-
-        let r = Scene::new(1920, 1080, viewport)
+        let r = Scene::new(1920, 1080)
             .with_light(l)
             .with_object(obj);
         r.render(100);
