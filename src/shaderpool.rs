@@ -4,6 +4,13 @@ use plumbing::Message;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc;
 use scene::Mat;
+use std::collections::HashMap;
+use material::HQZLegacy;
+use material::Material;
+use ray::Ray;
+use rand::prelude::*;
+use pcg_rand::seeds::PcgSeeder;
+
 
 pub struct ShaderPool {
     workers: Vec<ShaderWorker>,
@@ -16,15 +23,21 @@ struct ShaderWorker {
 }
 
 impl ShaderWorker {
-    fn new(id: usize, shader_list: Mat, receiver: Arc<Mutex<mpsc::Receiver<Message<HitData>>>>) -> Self {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message<HitData>>>>, ray_sender: mpsc::Sender<Message<Ray>>) -> Self {
+        let shader = HQZLegacy::default();
         let thread = thread::Builder::new().name(format!("Shader {}", id).to_string()).spawn(move || {
             loop {
                 let message = receiver.lock().unwrap().recv().unwrap();
                 match message {
-                    Message::Next(s) => {
-                        s
-
-                    }
+                    Message::Next(mut s) => {
+                        match shader.outcome(&s.direction, &s.normal, s.wavelength, s.alpha, &mut s.ray_rng) {
+                            None => {},
+                            Some(o) => {
+                                let ray = Ray::from_hit(s,o);
+                                ray_sender.send(Message::Next(ray));
+                            },
+                        }
+                    },
                     
                     Message::Terminate => {
                         println!("Shader {} Terminating", id);
@@ -41,7 +54,7 @@ impl ShaderWorker {
 }
 
 impl ShaderPool {
-    pub fn new(size: usize) -> Self {
+    pub fn new(size: usize, ray_dispatch: mpsc::Sender<Message<Ray>>) -> Self {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -51,7 +64,7 @@ impl ShaderPool {
         let mut workers = Vec::with_capacity(size);
 
         for id in 0..size {
-            workers.push(ShaderWorker::new(id, Arc::clone(&receiver)));
+            workers.push(ShaderWorker::new(id, Arc::clone(&receiver), ray_dispatch.clone()));
         }
 
         ShaderPool {

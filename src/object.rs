@@ -97,10 +97,10 @@ impl Object {
     /**
      * Returns a reference to the material used in this object
      */
-    pub fn get_material(&self) -> &usize {
+    pub fn get_material(&self) -> usize {
         match self {
-            Object::Curve { material, .. } => material,
-            Object::Line { material, .. } => material,
+            Object::Curve { material, .. } => *material,
+            Object::Line { material, .. } =>  *material,
         }
     }
 

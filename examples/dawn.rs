@@ -13,7 +13,7 @@ use rustic_zen::prelude::*;
 fn main() {
     let width: f64 = 3440.0;
     let height: f64 = 1440.0;
-    let rays = ((width * height).round() / 2.0) as usize;
+    let rays = 10 * ((width * height).round() / 2.0) as usize;
 
     let m = Box::new(HQZLegacy::default());
 
@@ -22,7 +22,7 @@ fn main() {
         y0: Sample::Constant(height * 0.75),
         dx: Sample::Constant(width),
         dy: Sample::Constant(0.0),
-        material: m,
+        material: 1,
     };
 
     let l = Light {
@@ -38,6 +38,7 @@ fn main() {
     println!("Tracing Rays!");
     let r = Scene::new(width as usize, height as usize)
         .with_object(o)
+        .with_material(1, m)
         .with_light(l);
     let image = r.render(rays);
 

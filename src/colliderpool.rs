@@ -24,13 +24,15 @@ impl ColliderWorker {
                 let message = receiver.lock().unwrap().recv().unwrap();
                 match message {
                     Message::Next(mut r) => {
+                        let origin = r.get_origin().clone();
+                        let wavelength = r.get_wavelength().clone();
                         match r.collision_list(&scene, &viewport) {
                             None => (),
                             Some((hit, hitdata)) => {
                                 let complete = CompleteRay {
-                                    start: r.get_origin().clone(),
+                                    start: origin,
                                     end: hit,
-                                    wavelength: r.get_wavelength(),
+                                    wavelength: wavelength,
                                 };
 
                                 // Send the complete ray to drawing subsystem;
@@ -60,10 +62,13 @@ impl ColliderWorker {
 }
 
 impl ColliderPool {
-    pub fn new(size: usize, scene: &Vec<Object>, &viewport: &Rect, drawing_sender: mpsc::Sender<Message<CompleteRay>>, shader_sender: mpsc::Sender<Message<HitData>>) -> Self {
+    pub fn new(size: usize, scene: &Vec<Object>, &viewport: &Rect, 
+        sender: mpsc::Sender<Message<Ray>>,
+        receiver: mpsc::Receiver<Message<Ray>>,
+        drawing_sender: mpsc::Sender<Message<CompleteRay>>,
+        shader_sender: mpsc::Sender<Message<HitData>>) -> Self 
+    {
         assert!(size > 0);
-
-        let (sender, receiver) = mpsc::channel();
 
         let receiver = Arc::new(Mutex::new(receiver));
 

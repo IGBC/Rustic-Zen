@@ -12,6 +12,7 @@ use shaderpool::ShaderPool;
 use plumbing::Message;
 use std::collections::HashMap;
 use material::Material;
+use std::sync::mpsc;
 
 /// Data only struct which defines a Light Source
 ///
@@ -48,7 +49,7 @@ pub struct Light {
     pub wavelength: Sample,
 }
 
-type Mat = Box<dyn Material>;
+pub type Mat = Box<dyn Material>;
 
 /// Holds scene Configuration and logic
 pub struct Scene {
@@ -136,9 +137,11 @@ impl Scene {
     pub fn render(self, rays: usize) -> Image {
         let mut rng = Pcg64Fast::from_seed(PcgSeeder::seed(self.seed));
         
-        let shaders = ShaderPool::new(2);
+        let (sender, receiver) = mpsc::channel();
+
+        let shaders = ShaderPool::new(1, sender.clone());
         let renderer = Renderer::new(self.resolution_x, self.resolution_y, self.total_light_power);
-        let colliders = ColliderPool::new(2, &self.objects, &self.viewport, renderer.get_sender(), shaders.get_sender());
+        let colliders = ColliderPool::new(1, &self.objects, &self.viewport, sender, receiver, renderer.get_sender(), shaders.get_sender());
 
         let tx = colliders.get_sender();
 

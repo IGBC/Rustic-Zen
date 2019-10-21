@@ -8,14 +8,16 @@ use pcg_rand::seeds::PcgSeeder;
 
 pub type Hit = Option<(Point, Option<HitData>)>;
 
-#[derive(Copy, Clone)]
 pub struct HitData {
+    pub point: Point,
     pub normal: Vector,
+    pub direction: Vector,
     pub wavelength: f64,
     pub distance: f64,
     pub alpha: f64,
     pub bounces: u32,
     pub material: usize,
+    pub ray_rng: Pcg64Fast,
 }
 
 
@@ -62,6 +64,16 @@ impl Ray {
         }
     }
 
+    pub fn from_hit(mut hit: HitData, direction: Vector) -> Self {
+        Ray {
+            origin: hit.point,
+            direction: direction,
+            wavelength: hit.wavelength,
+            bounces: hit.bounces - 1,
+            ray_rng: Pcg64Fast::from_seed(PcgSeeder::seed(hit.ray_rng.gen())),
+        }
+    }
+
     pub fn get_origin(&self) -> &Point {
         return &self.origin;
     }
@@ -70,14 +82,14 @@ impl Ray {
         return self.wavelength;
     }
 
-    pub fn collision_list(&mut self, obj_list: &Vec<Object>,viewport: &Rect,) -> Hit {
+    pub fn collision_list(mut self, obj_list: &Vec<Object>,viewport: &Rect,) -> Hit {
         // get closest Collision
         // Mercifully O(N)
         let mut c_distance = std::f64::MAX;
         let mut c_hit: Option<Point> = None;
         let mut c_norm: Option<Vector> = None;
         let mut c_alpha: Option<f64> = None;
-        let mud c_material: Option<usize> = None;
+        let mut c_material: Option<usize> = None;
         for obj in obj_list.iter() {
             match obj.get_hit(&self.origin, &self.direction, &mut self.ray_rng) {
                 None => {},
@@ -108,12 +120,15 @@ impl Ray {
                 // if we have bounces left Return the result else None.
                 if self.bounces > 1 {
                     Some((p, Some(HitData{
-                            normal: c_norm.unwrap(), 
+                            point: p,
+                            normal: c_norm.unwrap(),
+                            direction: self.direction,
                             alpha: c_alpha.unwrap(), 
                             distance: c_distance,
                             bounces: self.bounces,
                             wavelength: self.wavelength,
-                            material: c_material,
+                            material: c_material.unwrap(),
+                            ray_rng: self.ray_rng,
                         }
                     )))
                 } else {

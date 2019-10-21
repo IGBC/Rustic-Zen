@@ -26,7 +26,7 @@ fn laser(angle: f64, wavelength: f64) -> Light {
 fn main() {
     let width: f64 = 1920.0;
     let height: f64 = 1080.0;
-    let rays = 1_000_000; //(width * height).round() as usize;
+    let rays = 10_000_000; //(width * height).round() as usize;
 
     let wall_m = Box::new(HQZLegacy::new(1.0, 0.0, 0.0));
     let floor_m = Box::new(HQZLegacy::new(0.1, 0.3, 0.5));
