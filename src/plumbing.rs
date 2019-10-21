@@ -1,4 +1,4 @@
-use geom::{Point, Vector};
+use geom::{Point};
 
 pub enum Message<T> {
     Next(T),

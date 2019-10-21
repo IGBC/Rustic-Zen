@@ -72,6 +72,8 @@ mod sampler;
 mod scene;
 mod plumbing;
 mod colliderpool;
+mod renderer;
+mod shaderpool;
 
 /// This prelude contains everything to quickstart using Rustic Zen.
 pub mod prelude {

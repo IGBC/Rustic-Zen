@@ -45,6 +45,7 @@ impl ColliderWorker {
                             }
                         }
                     }
+
                     Message::Terminate => {
                         println!("Collider {} Terminating", id);
                         break;
@@ -60,7 +61,7 @@ impl ColliderWorker {
 }
 
 impl ColliderPool {
-    fn new(size: usize, scene: &Vec<Object>, viewport: &Rect, drawing_sender: mpsc::Sender<Message<CompleteRay>>, shader_sender: mpsc::Sender<Message<HitData>>) -> Self {
+    pub fn new(size: usize, scene: &Vec<Object>, viewport: &Rect, drawing_sender: mpsc::Sender<Message<CompleteRay>>, shader_sender: mpsc::Sender<Message<HitData>>) -> Self {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -79,7 +80,7 @@ impl ColliderPool {
         }
     }
 
-    fn get_sender(&self) -> &mpsc::Sender<Message<Ray>> {
-        &(self.sender)
+    pub fn get_sender(&self) -> mpsc::Sender<Message<Ray>> {
+        self.sender.clone()
     }
 }

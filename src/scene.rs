@@ -1,14 +1,15 @@
 use geom::{Point, Rect};
 use image::Image;
 use object::Object;
-use ray::{Ray, HitData};
+use ray::{Ray};
 use sampler::Sample;
-use std::thread;
-use std::sync::{mpsc};
-use plumbing::{CompleteRay};
 use pcg_rand::Pcg64Fast;
 use rand::prelude::*;
 use pcg_rand::seeds::PcgSeeder;
+use colliderpool::ColliderPool;
+use renderer::Renderer;
+use shaderpool::ShaderPool;
+use plumbing::Message;
 
 /// Data only struct which defines a Light Source
 ///
@@ -121,62 +122,22 @@ impl Scene {
     /// Naturally this call is very expensive. It also consumes the Renderer
     /// and returns an Image class containing the rendered image data.
     pub fn render(self, rays: usize) -> Image {
-        let (dispatch_tx, dispatch_rx) = mpsc::channel::<Ray>();
-        let (rasterise_tx, rasterise_rx) = mpsc::channel::<CompleteRay>();
-        let (shader_tx, shader_rx) = mpsc::channel::<HitData>();
-
         let mut rng = Pcg64Fast::from_seed(PcgSeeder::seed(self.seed));
         
-        let mut image = Image::new(self.resolution_x, self.resolution_y, self.total_light_power);
+        let shaders = ShaderPool::new(1);
+        let renderer = Renderer::new(self.resolution_x, self.resolution_y, self.total_light_power);
+        let colliders = ColliderPool::new(2, &self.objects, &self.viewport, renderer.get_sender(), shaders.get_sender());
 
-        let seed = self.seed;
-        let lights = &self.lights;
-        let total_light_power = self.total_light_power;
+        let tx = colliders.get_sender();
 
-        // thread::spawn(move || {
-        //     let tx = dispatch_tx.clone(); 
-        //     let mut rng = PRNG::seed(seed);
-        //     for _i in 0..rays {
-        //         let l = Self::choose_light(lights, total_light_power, &mut rng);
-        //         let mut ray = Ray::new(&l, &mut rng);
-        //         tx.send(ray).unwrap();
-        //     }
-        // });
-
-        let seed = self.seed;
-        let viewport = self.viewport;
-        let objects = &self.objects;
-
-        // thread::spawn(move || {
-        //     let mut rng = PRNG::seed(seed);
-        //     let thread_tx = dispatch_tx.clone();
-        //     for ray in dispatch_rx {
-        //         let (r, hit) = ray.collision_list(objects, viewport, &mut rng);
-        //         match hit {
-        //             Some(h) => {
-        //                 rasterise_tx.send(CompleteRay {
-        //                     start: ray.get_origin().clone(),
-        //                     end: h,
-        //                     wavelength: ray.get_wavelength(),
-        //                 }).unwrap();
-        //             },
-        //             None => {},
-        //         };
-        //         match r {
-        //             Some(r) => {
-        //                 thread_tx.send(r).unwrap();
-        //             },
-        //             None => {}
-        //         }
-        //     }
-        // });
-
-        for comp_ray in rasterise_rx {
-            image.draw_line(comp_ray.wavelength, comp_ray.start.x, comp_ray.start.y, comp_ray.end.x, comp_ray.end.y);
+        for _i in 0..rays {
+            let l = self.choose_light(&mut rng);
+            let mut ray = Ray::new(&l, &mut rng);
+            tx.send(Message::Next(ray)).unwrap();
         }
 
         // return rendered image.
-        image
+        renderer.get_image()
     }
 }
 
