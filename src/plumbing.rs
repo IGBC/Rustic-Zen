@@ -14,12 +14,3 @@ pub struct CompleteRay {
 }
 
 // Collider --> Shader Pipe
-#[derive(Copy, Clone)]
-pub struct HitData {
-    pub hit: Point,
-    pub wavelength: f64,
-    pub distance: f64,
-    pub alpha: f64,
-    pub bounces: u32,
-}
-

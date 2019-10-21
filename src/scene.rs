@@ -1,11 +1,11 @@
 use geom::{Point, Rect};
 use image::Image;
 use object::Object;
-use ray::Ray;
+use ray::{Ray, HitData};
 use sampler::Sample;
 use std::thread;
 use std::sync::{mpsc};
-use plumbing::{CompleteRay, HitData};
+use plumbing::{CompleteRay};
 use pcg_rand::Pcg64Fast;
 use rand::prelude::*;
 use pcg_rand::seeds::PcgSeeder;
