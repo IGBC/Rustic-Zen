@@ -1,12 +1,14 @@
 use std::thread;
-use plumbing::{Message, NewRay};
+use ray::Ray;
+use plumbing::Message;
 use object::Object;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc;
+use geom::Rect;
 
 pub struct ColliderPool {
     workers: Vec<ColliderWorker>,
-    sender: mpsc::Sender<Message<NewRay>>,
+    sender: mpsc::Sender<Message<Ray>>,
 }
 
 struct ColliderWorker {
@@ -15,13 +17,14 @@ struct ColliderWorker {
 }
 
 impl ColliderWorker {
-    fn new(id: usize, scene: &Vec<Object>, receiver: Arc<Mutex<mpsc::Receiver<Message<NewRay>>>>) -> Self {
+    fn new(id: usize, scene: &Vec<Object>, viewport: &Rect, receiver: Arc<Mutex<mpsc::Receiver<Message<Ray>>>>) -> Self {
         let thread = thread::spawn(move || {
             loop {
                 let message = receiver.lock().unwrap().recv().unwrap();
                 match message {
                     Message::Next(r) => {
                         println!("Collider {} Working on ray", id);
+                        r.collision_list(scene, viewport);
                     }
                     Message::Terminate => {
                         println!("Collier {} Terminating", id);
@@ -38,7 +41,7 @@ impl ColliderWorker {
 }
 
 impl ColliderPool {
-    fn new(size: usize, scene: &Vec<Object>) -> Self {
+    fn new(size: usize, scene: &Vec<Object>, viewport: &Rect) -> Self {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -48,7 +51,7 @@ impl ColliderPool {
         let mut workers = Vec::with_capacity(size);
 
         for id in 0..size {
-            workers.push(ColliderWorker::new(id, scene, Arc::clone(&receiver)));
+            workers.push(ColliderWorker::new(id, scene, viewport, Arc::clone(&receiver)));
         }
 
         ColliderPool {

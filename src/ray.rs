@@ -1,5 +1,4 @@
 use geom::{Point, Rect, Vector, Matrix};
-use image::Image;
 use object::Object;
 use pcg_rand::{Pcg64Fast};
 use scene::Light;
@@ -7,7 +6,6 @@ use std::f64::consts::PI;
 use rand::prelude::*;
 use pcg_rand::seeds::PcgSeeder;
 
-#[derive(Copy, Clone)]
 pub struct Ray {
     origin: Point,
     direction: Vector,
@@ -59,27 +57,23 @@ impl Ray {
         return self.wavelength;
     }
 
-    pub fn collision_list(
-        &mut self,
-        obj_list: &Vec<Object>,
-        viewport: Rect,
-        image: &mut Image,
-    ) -> Option<Self> {
+    pub fn collision_list(&self, obj_list: &Vec<Object>,viewport: &Rect,) -> Option<(Point, Option<(Vector, f64, f64)>)> {
         // get closest Collision
         // Mercifully O(N)
         let mut c_distance = std::f64::MAX;
         let mut c_hit: Option<Point> = None;
-        let mut c_res: Option<Self> = None;
+        let mut c_norm: Option<Vector> = None;
+        let mut c_alpha: Option<f64> = None;
         for i in obj_list.iter() {
-            let result = self.bounce(i);
-            match result {
+            match self.get_collision_distance(i) {
                 None => {}
                 Some(i) => {
-                    let dist = self.origin.distance(i.get_origin());
+                    let dist = i.3;
                     if dist < c_distance {
                         c_distance = dist;
-                        c_hit = Some(i.get_origin().clone());
-                        c_res = Some(i);
+                        c_hit = Some(i.0);
+                        c_norm = Some(i.1);
+                        c_alpha = Some(i.2);
                     }
                 }
             }
@@ -88,7 +82,7 @@ impl Ray {
         let end = match c_hit {
             None =>  // We hit nothing, we need to test on the viewport!
                 match self.furthest_aabb(viewport) {
-                    None => { return (None, None); },
+                    None => { return None; },
                     Some(p) => p,
                 }
             Some(p) => p, //this is the closest point we hit!
@@ -96,10 +90,24 @@ impl Ray {
 
         // if we have bounces left Return the result else None.
         if self.bounces > 1 {
-            (c_res, Some(end))
+            Some((end, Some((c_norm.unwrap(), c_alpha.unwrap(), c_distance))))
         } else {
-            (None, Some(end))
+            Some((end, None))
         }
+    }
+
+    fn get_collision_distance(&self, obj: &Object) -> Option<(Point, Vector, f64, f64)> {
+         let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, &mut self.ray_rng) {
+            None => return None,
+            Some((hit, normal, alpha)) => (hit, normal, alpha),
+        };
+
+        let dist = self.origin.distance(&hit);
+
+        if dist < 3.0 {
+            return None;
+        }
+        return Some((hit, normal, alpha, dist))
     }
 
     /**
@@ -107,7 +115,7 @@ impl Ray {
      * returns none if it does not actually hit the object.
      * Objects are sampled so two identical rays may not have the same outcome.
      */
-    pub fn bounce(&mut self, obj: &Object) -> Option<Self> {
+    fn bounce(&mut self, obj: &Object) -> Option<Self> {
         // Todo get actual ray start. And do an actual collision test
         let (hit, normal, alpha) = match obj.get_hit(&self.origin, &self.direction, &mut self.ray_rng) {
             None => return None,
@@ -173,7 +181,7 @@ impl Ray {
         // return Some(distance);
     }
 
-    pub fn furthest_aabb(&self, aabb: Rect) -> Option<Point> {
+    pub fn furthest_aabb(&self, aabb: &Rect) -> Option<Point> {
         let mut max_dist: Option<f64> = None;
 
         let horizontal = Vector {

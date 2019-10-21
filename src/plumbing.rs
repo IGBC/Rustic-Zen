@@ -5,13 +5,6 @@ pub enum Message<T> {
     Terminate,
 }
 
-pub struct NewRay {
-    pub start: Point,
-    pub direction: Vector,
-    pub wavelength: f64,
-    pub bounces: u32,
-}
-
 // Collider --> Rasteriser Pipe
 #[derive(Copy, Clone)]
 pub struct CompleteRay {

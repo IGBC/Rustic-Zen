@@ -97,23 +97,23 @@ impl Scene {
         let sample = Sample::Range(self.total_light_power, 0.0);
         let threshold = sample.val(rng);
         let mut sum: f64 = 0.0;
-        for light in lights {
+        for light in self.lights {
             sum += light.power.val(rng);
             if threshold <= sum {
-                return light.clone();
+                return &light
             }
         }
-        return lights.last().expect("Scene has no lights").clone();
+        return &(self.lights.last().expect("Scene has no lights"));
     }
 
     fn trace_ray(&self, img: &mut Image, rng: &mut Pcg64Fast) {
         let l = self.choose_light(rng);
         let mut ray = Some(Ray::new(l, rng));
-        while ray.is_some() {
-            ray = ray
-                .unwrap()
-                .collision_list(&self.objects, self.viewport, img);
-        }
+        // while ray.is_some() {
+        //     ray = ray
+        //         .unwrap()
+        //         .collision_list(&self.objects, self.viewport, img);
+        // }
     }
 
     /// Starts the ray tracing process.
@@ -133,43 +133,43 @@ impl Scene {
         let lights = &self.lights;
         let total_light_power = self.total_light_power;
 
-        thread::spawn(move || {
-            let tx = dispatch_tx.clone(); 
-            let mut rng = PRNG::seed(seed);
-            for _i in 0..rays {
-                let l = Self::choose_light(lights, total_light_power, &mut rng);
-                let mut ray = Ray::new(&l, &mut rng);
-                tx.send(ray).unwrap();
-            }
-        });
+        // thread::spawn(move || {
+        //     let tx = dispatch_tx.clone(); 
+        //     let mut rng = PRNG::seed(seed);
+        //     for _i in 0..rays {
+        //         let l = Self::choose_light(lights, total_light_power, &mut rng);
+        //         let mut ray = Ray::new(&l, &mut rng);
+        //         tx.send(ray).unwrap();
+        //     }
+        // });
 
         let seed = self.seed;
         let viewport = self.viewport;
         let objects = &self.objects;
 
-        thread::spawn(move || {
-            let mut rng = PRNG::seed(seed);
-            let thread_tx = dispatch_tx.clone();
-            for ray in dispatch_rx {
-                let (r, hit) = ray.collision_list(objects, viewport, &mut rng);
-                match hit {
-                    Some(h) => {
-                        rasterise_tx.send(CompleteRay {
-                            start: ray.get_origin().clone(),
-                            end: h,
-                            wavelength: ray.get_wavelength(),
-                        }).unwrap();
-                    },
-                    None => {},
-                };
-                match r {
-                    Some(r) => {
-                        thread_tx.send(r).unwrap();
-                    },
-                    None => {}
-                }
-            }
-        });
+        // thread::spawn(move || {
+        //     let mut rng = PRNG::seed(seed);
+        //     let thread_tx = dispatch_tx.clone();
+        //     for ray in dispatch_rx {
+        //         let (r, hit) = ray.collision_list(objects, viewport, &mut rng);
+        //         match hit {
+        //             Some(h) => {
+        //                 rasterise_tx.send(CompleteRay {
+        //                     start: ray.get_origin().clone(),
+        //                     end: h,
+        //                     wavelength: ray.get_wavelength(),
+        //                 }).unwrap();
+        //             },
+        //             None => {},
+        //         };
+        //         match r {
+        //             Some(r) => {
+        //                 thread_tx.send(r).unwrap();
+        //             },
+        //             None => {}
+        //         }
+        //     }
+        // });
 
         for comp_ray in rasterise_rx {
             image.draw_line(comp_ray.wavelength, comp_ray.start.x, comp_ray.start.y, comp_ray.end.x, comp_ray.end.y);
