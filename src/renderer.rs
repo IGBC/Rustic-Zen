@@ -15,7 +15,7 @@ impl Renderer {
         let (sender, receiver) = mpsc::channel();
 
         let worker = thread::spawn(move || {
-            let image = Image::new(width, height, lightpower);
+            let mut image = Image::new(width, height, lightpower);
             loop {
                 let message: Message<CompleteRay> = receiver.recv().unwrap();
                 match message {
@@ -37,7 +37,7 @@ impl Renderer {
         }
     }
 
-    pub fn get_sender(self) -> mpsc::Sender<Message<CompleteRay>> {
+    pub fn get_sender(&self) -> mpsc::Sender<Message<CompleteRay>> {
         self.sender.clone()
     }
 

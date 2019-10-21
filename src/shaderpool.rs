@@ -16,12 +16,12 @@ struct ShaderWorker {
 
 impl ShaderWorker {
     fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message<HitData>>>>) -> Self {
-        let thread = thread::spawn(move || {
+        let thread = thread::Builder::new().name(format!("Shader {}", id).to_string()).spawn(move || {
             loop {
                 let message = receiver.lock().unwrap().recv().unwrap();
                 match message {
                     Message::Next(r) => {
-                        println!("Shader {} Working", id);
+                        
 
                     }
                     
@@ -34,7 +34,7 @@ impl ShaderWorker {
         });
         ShaderWorker {
             id,
-            worker: Some(thread),
+            worker: Some(thread.unwrap()),
         }
     }
 }
@@ -61,5 +61,19 @@ impl ShaderPool {
 
     pub fn get_sender(&self) -> mpsc::Sender<Message<HitData>> {
         self.sender.clone()
+    }
+}
+
+impl Drop for ShaderPool {
+    fn drop(&mut self) {
+        for _ in &mut self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+
+        for worker in &mut self.workers {
+            if let Some(thread) = worker.worker.take() {
+                thread.join().unwrap();
+            }
+        }
     }
 }

@@ -10,6 +10,8 @@ use colliderpool::ColliderPool;
 use renderer::Renderer;
 use shaderpool::ShaderPool;
 use plumbing::Message;
+use std::collections::HashMap;
+use material::Material;
 
 /// Data only struct which defines a Light Source
 ///
@@ -46,10 +48,13 @@ pub struct Light {
     pub wavelength: Sample,
 }
 
+type Mat = Box<dyn Material>;
+
 /// Holds scene Configuration and logic
 pub struct Scene {
     lights: Vec<Light>,
     objects: Vec<Object>,
+    materials: HashMap<usize, Mat>,
     seed: u128, //current seed
     total_light_power: f64,
     resolution_x: usize,
@@ -65,6 +70,7 @@ impl Scene {
             seed: 0xDEADBEEF00000000F00DBABE00000000, //It just can't be 0
             lights: vec![],
             objects: vec![],
+            materials: HashMap::new(),
             viewport: Rect::from_points(&Point{ x: 0.0, y: 0.0 }, &Point { x: resolution_x as f64, y: resolution_y as f64 }),
             resolution_x,
             resolution_y,
@@ -85,6 +91,12 @@ impl Scene {
         self
     }
 
+    /// Adds a material to the scene
+    pub fn with_material(mut self, id: usize, material: Mat) -> Self {
+        self.materials.insert(id, material);
+        self
+    }
+
     /// Sets the seed for the scene random number generator - Chainable varient
     pub fn with_seed(mut self, seed: u128) -> Self {
         if seed == 0 {
@@ -94,22 +106,22 @@ impl Scene {
         self
     }
 
-    fn choose_light(&self, rng: &mut Pcg64Fast) -> &Light {
+    fn choose_light(&self, rng: &mut Pcg64Fast) -> Light {
         let sample = Sample::Range(self.total_light_power, 0.0);
         let threshold = sample.val(rng);
         let mut sum: f64 = 0.0;
-        for light in self.lights {
+        for light in self.lights.iter() {
             sum += light.power.val(rng);
             if threshold <= sum {
-                return &light
+                return light.clone();
             }
         }
-        return &(self.lights.last().expect("Scene has no lights"));
+        return self.lights.last().expect("Scene has no lights").clone();
     }
 
     fn trace_ray(&self, img: &mut Image, rng: &mut Pcg64Fast) {
         let l = self.choose_light(rng);
-        let mut ray = Some(Ray::new(l, rng));
+        let mut ray = Some(Ray::new(&l, rng));
         // while ray.is_some() {
         //     ray = ray
         //         .unwrap()
@@ -124,7 +136,7 @@ impl Scene {
     pub fn render(self, rays: usize) -> Image {
         let mut rng = Pcg64Fast::from_seed(PcgSeeder::seed(self.seed));
         
-        let shaders = ShaderPool::new(1);
+        let shaders = ShaderPool::new(2);
         let renderer = Renderer::new(self.resolution_x, self.resolution_y, self.total_light_power);
         let colliders = ColliderPool::new(2, &self.objects, &self.viewport, renderer.get_sender(), shaders.get_sender());
 

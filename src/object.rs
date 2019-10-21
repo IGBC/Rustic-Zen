@@ -9,11 +9,12 @@ use material::Material;
 ///
 /// Interally contains the associated logic.
 
+#[derive(Copy, Clone)]
 pub enum Object {
     /// Straight line varient
     Line {
         /// Material used
-        material: Box<dyn Material>,
+        material: usize,
         /// Starting x Position
         x0: Sample,
         /// Starting y Position
@@ -29,7 +30,7 @@ pub enum Object {
     /// **Do not Use!.**
     Curve {
         /// Material used
-        material: Box<dyn Material>,
+        material: usize,
         /// Starting x Position
         x0: Sample,
         /// Starting y Position
@@ -96,7 +97,7 @@ impl Object {
     /**
      * Returns a reference to the material used in this object
      */
-    pub fn get_material(&self) -> &Box<dyn Material> {
+    pub fn get_material(&self) -> &usize {
         match self {
             Object::Curve { material, .. } => material,
             Object::Line { material, .. } => material,

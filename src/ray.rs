@@ -69,7 +69,7 @@ impl Ray {
         return self.wavelength;
     }
 
-    pub fn collision_list(&self, obj_list: &Vec<Object>,viewport: &Rect,) -> Hit {
+    pub fn collision_list(&mut self, obj_list: &Vec<Object>,viewport: &Rect,) -> Hit {
         // get closest Collision
         // Mercifully O(N)
         let mut c_distance = std::f64::MAX;
@@ -138,7 +138,7 @@ impl Ray {
         }
 
         let mat = obj.get_material();
-        let outcome = mat.outcome(&self.direction, &normal, self.wavelength, alpha, &mut self.ray_rng);
+        let outcome = None; //mat.outcome(&self.direction, &normal, self.wavelength, alpha, &mut self.ray_rng);
         let direction = match outcome {
             Some(o) => o,
             None => {

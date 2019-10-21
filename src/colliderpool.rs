@@ -18,14 +18,13 @@ struct ColliderWorker {
 }
 
 impl ColliderWorker {
-    fn new(id: usize, scene: &Vec<Object>, viewport: &Rect, receiver: Arc<Mutex<mpsc::Receiver<Message<Ray>>>>, drawing: mpsc::Sender<Message<CompleteRay>>, bounce: mpsc::Sender<Message<HitData>>) -> Self {
-        let thread = thread::spawn(move || {
+    fn new(id: usize, scene: Vec<Object>, viewport: Rect, receiver: Arc<Mutex<mpsc::Receiver<Message<Ray>>>>, drawing: mpsc::Sender<Message<CompleteRay>>, bounce: mpsc::Sender<Message<HitData>>) -> Self {
+        let thread = thread::Builder::new().name(format!("Shader {}", id).to_string()).spawn(move || {
             loop {
                 let message = receiver.lock().unwrap().recv().unwrap();
                 match message {
-                    Message::Next(r) => {
-                        println!("Collider {} Working on ray", id);
-                        match r.collision_list(scene, viewport) {
+                    Message::Next(mut r) => {
+                        match r.collision_list(&scene, &viewport) {
                             None => (),
                             Some((hit, hitdata)) => {
                                 let complete = CompleteRay {
@@ -55,13 +54,13 @@ impl ColliderWorker {
         });
         ColliderWorker {
             id,
-            worker: Some(thread),
+            worker: Some(thread.unwrap()),
         }
     }
 }
 
 impl ColliderPool {
-    pub fn new(size: usize, scene: &Vec<Object>, viewport: &Rect, drawing_sender: mpsc::Sender<Message<CompleteRay>>, shader_sender: mpsc::Sender<Message<HitData>>) -> Self {
+    pub fn new(size: usize, scene: &Vec<Object>, &viewport: &Rect, drawing_sender: mpsc::Sender<Message<CompleteRay>>, shader_sender: mpsc::Sender<Message<HitData>>) -> Self {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -71,7 +70,7 @@ impl ColliderPool {
         let mut workers = Vec::with_capacity(size);
 
         for id in 0..size {
-            workers.push(ColliderWorker::new(id, scene, viewport, Arc::clone(&receiver), drawing_sender.clone(), shader_sender.clone()));
+            workers.push(ColliderWorker::new(id, scene.to_vec(), viewport.clone(), Arc::clone(&receiver), drawing_sender.clone(), shader_sender.clone()));
         }
 
         ColliderPool {
@@ -82,5 +81,20 @@ impl ColliderPool {
 
     pub fn get_sender(&self) -> mpsc::Sender<Message<Ray>> {
         self.sender.clone()
+    }
+}
+
+
+impl Drop for ColliderPool {
+    fn drop(&mut self) {
+        for _ in &mut self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+
+        for worker in &mut self.workers {
+            if let Some(thread) = worker.worker.take() {
+                thread.join().unwrap();
+            }
+        }
     }
 }
