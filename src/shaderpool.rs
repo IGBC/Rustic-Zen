@@ -3,6 +3,7 @@ use ray::{HitData};
 use plumbing::Message;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc;
+use scene::Mat;
 
 pub struct ShaderPool {
     workers: Vec<ShaderWorker>,
@@ -15,13 +16,13 @@ struct ShaderWorker {
 }
 
 impl ShaderWorker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message<HitData>>>>) -> Self {
+    fn new(id: usize, shader_list: Mat, receiver: Arc<Mutex<mpsc::Receiver<Message<HitData>>>>) -> Self {
         let thread = thread::Builder::new().name(format!("Shader {}", id).to_string()).spawn(move || {
             loop {
                 let message = receiver.lock().unwrap().recv().unwrap();
                 match message {
-                    Message::Next(r) => {
-                        
+                    Message::Next(s) => {
+                        s
 
                     }
                     

@@ -15,6 +15,7 @@ pub struct HitData {
     pub distance: f64,
     pub alpha: f64,
     pub bounces: u32,
+    pub material: usize,
 }
 
 
@@ -76,6 +77,7 @@ impl Ray {
         let mut c_hit: Option<Point> = None;
         let mut c_norm: Option<Vector> = None;
         let mut c_alpha: Option<f64> = None;
+        let mud c_material: Option<usize> = None;
         for obj in obj_list.iter() {
             match obj.get_hit(&self.origin, &self.direction, &mut self.ray_rng) {
                 None => {},
@@ -88,6 +90,7 @@ impl Ray {
                             c_hit = Some(hit);
                             c_norm = Some(normal);
                             c_alpha = Some(alpha);
+                            c_material = Some(obj.get_material());
                         }
                     }    
                 },
@@ -110,6 +113,7 @@ impl Ray {
                             distance: c_distance,
                             bounces: self.bounces,
                             wavelength: self.wavelength,
+                            material: c_material,
                         }
                     )))
                 } else {
