@@ -13,7 +13,7 @@ pub enum Object {
     /// Straight line varient
     Line {
         /// Material used
-        material: Box<Material>,
+        material: Box<dyn Material>,
         /// Starting x Position
         x0: Sample,
         /// Starting y Position
@@ -29,7 +29,7 @@ pub enum Object {
     /// **Do not Use!.**
     Curve {
         /// Material used
-        material: Box<Material>,
+        material: Box<dyn Material>,
         /// Starting x Position
         x0: Sample,
         /// Starting y Position
@@ -96,7 +96,7 @@ impl Object {
     /**
      * Returns a reference to the material used in this object
      */
-    pub fn get_material(&self) -> &Box<Material> {
+    pub fn get_material(&self) -> &Box<dyn Material> {
         match self {
             Object::Curve { material, .. } => material,
             Object::Line { material, .. } => material,
