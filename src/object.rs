@@ -1,5 +1,5 @@
 use geom::{Point, Rect, Vector, Matrix};
-use prng::PRNG;
+use pcg_rand::Pcg64Fast;
 use sampler::Sample;
 use std::f64::consts::PI;
 
@@ -118,7 +118,7 @@ impl Object {
         &self,
         origin: &Point,
         dir: &Vector,
-        rng: &mut PRNG,
+        rng: &mut Pcg64Fast,
     ) -> Option<(Point, Vector, f64)> {
         // Get s1 and sD from samples
         let (s1, sd) = match self {
@@ -199,14 +199,15 @@ mod tests {
     use super::Object;
     use geom::{Point, Vector};
     use material::HQZLegacy;
-    use prng::PRNG;
     use sampler::Sample;
+    use rand::prelude::*;
+    use pcg_rand::Pcg64Fast;
 
     #[test]
     /// Ray hits object test
     /// Test result should be a hit at (5,5)
     fn hit_line_1() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
@@ -240,7 +241,7 @@ mod tests {
     /// Test result should be None as Ray crosses dy/dx
     /// Past the end of the object.
     fn miss_line_1() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 
@@ -265,7 +266,7 @@ mod tests {
     /// Test result should be None, as Ray is going 180°
     /// in the wrong direction to hit the object.
     fn miss_line_2() {
-        let mut rng = PRNG::seed(0);
+        let mut rng = Pcg64Fast::from_entropy();
 
         let m = Box::new(HQZLegacy::new(0.3, 0.3, 0.3));
 

@@ -1,12 +1,14 @@
 use geom::{Point, Rect};
 use image::Image;
 use object::Object;
-use prng::PRNG;
 use ray::Ray;
 use sampler::Sample;
 use std::thread;
 use std::sync::{mpsc};
 use plumbing::{CompleteRay, HitData};
+use pcg_rand::Pcg64Fast;
+use rand::prelude::*;
+use pcg_rand::seeds::PcgSeeder;
 
 /// Data only struct which defines a Light Source
 ///
@@ -47,7 +49,7 @@ pub struct Light {
 pub struct Scene {
     lights: Vec<Light>,
     objects: Vec<Object>,
-    seed: u32, //current seed
+    seed: u128, //current seed
     total_light_power: f64,
     resolution_x: usize,
     resolution_y: usize,
@@ -58,7 +60,8 @@ impl Scene {
     /// Creates new Renderer ready for defining a scene.
     pub fn new(resolution_x: usize, resolution_y: usize) -> Self {
         Self {
-            seed: 0,
+            // 128 bit numbers are getting a bit too long even in hex
+            seed: 0xDEADBEEF00000000F00DBABE00000000, //It just can't be 0
             lights: vec![],
             objects: vec![],
             viewport: Rect::from_points(&Point{ x: 0.0, y: 0.0 }, &Point { x: resolution_x as f64, y: resolution_y as f64 }),
@@ -82,13 +85,16 @@ impl Scene {
     }
 
     /// Sets the seed for the scene random number generator - Chainable varient
-    pub fn with_seed(mut self, seed: u32) -> Self {
+    pub fn with_seed(mut self, seed: u128) -> Self {
+        if seed == 0 {
+            panic!("Sorry a seed of 0 causes a PCG failure, please try something else");
+        }
         self.seed = seed;
         self
     }
 
-    fn choose_light(lights: &Vec<Light>, total_light_power: f64, rng: &mut PRNG) -> Light {
-        let sample = Sample::Range(total_light_power, 0.0);
+    fn choose_light(&self, rng: &mut Pcg64Fast) -> &Light {
+        let sample = Sample::Range(self.total_light_power, 0.0);
         let threshold = sample.val(rng);
         let mut sum: f64 = 0.0;
         for light in lights {
@@ -100,13 +106,13 @@ impl Scene {
         return lights.last().expect("Scene has no lights").clone();
     }
 
-    fn trace_ray(&self, img: &mut Image, rng: &mut PRNG) {
-        let l = Self::choose_light(&self.lights, self.total_light_power, rng);
-        let mut ray = Some(Ray::new(&l, rng));
+    fn trace_ray(&self, img: &mut Image, rng: &mut Pcg64Fast) {
+        let l = self.choose_light(rng);
+        let mut ray = Some(Ray::new(l, rng));
         while ray.is_some() {
-            let r2 = ray.unwrap();
-            let (r, hit) = r2.collision_list(&self.objects, self.viewport, rng);
-
+            ray = ray
+                .unwrap()
+                .collision_list(&self.objects, self.viewport, img);
         }
     }
 
@@ -118,6 +124,9 @@ impl Scene {
         let (dispatch_tx, dispatch_rx) = mpsc::channel::<Ray>();
         let (rasterise_tx, rasterise_rx) = mpsc::channel::<CompleteRay>();
         let (shader_tx, shader_rx) = mpsc::channel::<HitData>();
+
+        let mut rng = Pcg64Fast::from_seed(PcgSeeder::seed(self.seed));
+        
         let mut image = Image::new(self.resolution_x, self.resolution_y, self.total_light_power);
 
         let seed = self.seed;
@@ -205,5 +214,11 @@ mod tests {
             .with_light(l)
             .with_object(obj);
         r.render(100);
+    }
+
+    #[test]
+    #[should_panic]
+    fn seed_eq_zero() {
+        let _r = Scene::new(1920, 1080).with_seed(0);
     }
 }
