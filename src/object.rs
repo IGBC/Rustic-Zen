@@ -1,3 +1,16 @@
+/// Some considerations for adding curve support to this: 
+/// https://blog.demofox.org/2016/03/05/matrix-form-of-bezier-curves/
+/// https://pomax.github.io/bezierinfo/
+/// https://computergraphics.stackexchange.com/questions/374/how-to-raytrace-bezier-surfaces/378
+/// https://en.wikipedia.org/wiki/B-spline
+/// https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+/// 
+/// Micha's zenphoton did not actually collide curves, curves were implemented only with their normals,
+///  which seemed to work well, although I would be lying if I said I understood why. It seems to me 
+/// that more comtrollable results could be achieved with besier curves, but it seems the computational
+/// cost of adding these could be very high, which might explain zenphoton's use of a hack.
+
+
 use geom::{Point, Rect, Vector, Matrix};
 use pcg_rand::Pcg64Fast;
 use sampler::Sample;
