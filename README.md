@@ -1,5 +1,9 @@
-# Zen Photon:
+# Rustic Zen:
 Photon Garden Raytracer Impementation.
+Rust Impementation of Zenphoton
+
+This project is hosted on Gitlab with a mirror to Github. 
+Main Repo: https://gitlab.com/IGBC/rustic-zen/
 
 Rustic Zen renders artworks from a scene definition by simulating individual
 photons and tracing their path as they bounce through a 2D. space.
